@@ -63,12 +63,25 @@ Quando terminar de trabalhar ou jogar, volte ao terminal onde o servidor está r
 
 ---
 
-### 📦 Como Gerar a Versão Final (Para Hospedagem)
+### 📦 Como Publicar / Atualizar a Versão Online (GitHub Pages)
 
-Quando o jogo estiver 100% pronto e você quiser gerar a pasta `dist` (A pasta minúscula com os arquivos reais que vão para o ar no GitHub Pages, Vercel ou outra hospedagem), rode o comando:
+A configuração deste projeto já possui uma automação nativa para o link público do seu jogo no GitHub.
+
+Sempre que você quiser atualizar o link oficial para que os jogadores vejam suas últimas alterações, você só precisa de UM comando.
+Certifique-se de que parou o servidor (`Ctrl + C`) e depois rode:
 
 ```bash
-npm run build
+npm run deploy
 ```
 
-O Vite vai compilar o seu código e criar a pasta mágica `dist` no seu diretório para você fazer o upload.
+*(Esse comando vai gerar a pasta otimizada `dist` nos bastidores e empurrar o conteúdo dela magicamente para a abra oculta `gh-pages` do seu repositório no GitHub).*
+
+**Atenção: O Backup do Seu Código-Fonte**
+O comando acima atualiza apenas a versão "jogável". Ele não salva o seu código-fonte como backup.
+Para salvar seu trabalho principal no GitHub (fazer backup na branch `main`), use sempre o fluxo tradicional do Git:
+
+```bash
+git add .
+git commit -m "Descreva as alterações que você fez"
+git push
+```

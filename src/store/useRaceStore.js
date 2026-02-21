@@ -1,6 +1,38 @@
 import { create } from 'zustand'
 import raceData from '../data/race.json'
 
+// Function to ensure unique positions 1-8 without ties
+function calculateNewRankings(player, rivals, playerPosChange, rivalChanges = {}) {
+    const racers = [
+        { id: player.id, isPlayer: true, currentPos: player.position, change: playerPosChange },
+        ...rivals.filter(r => r.isActive).map(r => ({
+            id: r.id,
+            isPlayer: false,
+            currentPos: r.position,
+            change: rivalChanges[r.id] || 0
+        }))
+    ];
+
+    racers.forEach(r => {
+        let target = r.currentPos - r.change;
+        if (r.change > 0) target -= 0.5; // Push ahead
+        else if (r.change < 0) target += 0.5; // Push behind
+
+        target += (r.currentPos * 0.01); // Tie breaker based on original position
+        r.targetPos = target;
+    });
+
+    racers.sort((a, b) => a.targetPos - b.targetPos);
+
+    let nextRank = 1;
+    const finalRanks = {};
+    racers.forEach(r => {
+        finalRanks[r.id] = nextRank++;
+    });
+
+    return finalRanks;
+}
+
 const INITIAL_RIVALS = raceData.race.rivals.map((r, i) => ({
     ...r,
     position: i + 2, // positions 2-8, player starts at 1
@@ -72,22 +104,27 @@ export const useRaceStore = create((set, get) => ({
             outcome = { ...path.outcomes.failure, type: 'failure' }
         }
 
-        // Update player state
+        // Calculate unique new positions
+        const posChange = outcome.positionChange || 0;
+        const newRanks = calculateNewRankings(player, rivals, posChange, {});
+
         const newDamage = Math.min(100, player.vehicleDamage + (outcome.damageIncrease || 0))
-        const newPosition = Math.max(1, Math.min(8, player.position + (outcome.positionChange || 0)))
         const newNitro = nitroActive ? player.nitro - 1 : player.nitro
+
+        const updatedRivals = rivals.map(r => r.isActive ? { ...r, position: newRanks[r.id] } : r);
 
         set({
             phase: 'revealing',
             player: {
                 ...player,
                 vehicleDamage: newDamage,
-                position: newPosition,
+                position: newRanks[player.id],
                 nitro: newNitro,
                 chosenPath: path.id,
                 statusEffect: outcome.statusEffect || null,
                 stability: Math.max(0, player.stability - (outcome.damageIncrease ? outcome.damageIncrease * 0.5 : 0)),
             },
+            rivals: updatedRivals,
             currentNarrative: path.narrative,
             currentOutcomeNarrative: outcome.narrative,
             lastOutcome: { ...outcome, finalRoll: rollWithNitro, path },
@@ -106,26 +143,33 @@ export const useRaceStore = create((set, get) => ({
         }
 
         // Simulate rival position updates
-        const rivals = get().rivals.map(r => {
-            if (!r.isActive) return r
-            const roll = Math.ceil(Math.random() * 10)
-            const posChange = roll >= 7 ? 1 : roll >= 4 ? 0 : -1
+        const rivalChanges = {};
+        const rivalsStatsUpdated = get().rivals.map(r => {
+            if (!r.isActive) return r;
+            const roll = Math.ceil(Math.random() * 10);
+            // 1 means gaining position (moves up in rank)
+            const posChange = roll >= 7 ? 1 : roll >= 4 ? 0 : -1;
+            rivalChanges[r.id] = posChange;
+
             return {
                 ...r,
-                position: Math.max(1, Math.min(8, r.position + posChange)),
                 damage: Math.min(100, r.damage + Math.floor(Math.random() * 15)),
-            }
-        })
+            };
+        });
+
+        const newRanks = calculateNewRankings(player, rivalsStatsUpdated, 0, rivalChanges);
+        const updatedRivals = rivalsStatsUpdated.map(r => r.isActive ? { ...r, position: newRanks[r.id] } : r);
 
         set({
             phase: 'choosing',
             player: {
                 ...player,
+                position: newRanks[player.id],
                 currentSegment: nextSegment,
                 chosenPath: null,
                 statusEffect: null,
             },
-            rivals,
+            rivals: updatedRivals,
             currentNarrative: raceData.segments[nextSegment].description,
             currentOutcomeNarrative: null,
             currentOutcomeNarrative: null,

@@ -94,7 +94,7 @@ export default function SceneView() {
                     key={currentBg || player.currentSegment}
                     className="absolute inset-0 z-0"
                     initial={{ opacity: 0, filter: 'brightness(0.3) saturate(0)' }}
-                    animate={{ opacity: 1, filter: 'brightness(0.55) saturate(0.8)' }}
+                    animate={{ opacity: 1, filter: 'brightness(0.85) saturate(1.1)' }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.6 }}
                 >
@@ -107,8 +107,8 @@ export default function SceneView() {
                             onError={() => setBgLoaded(false)}
                         />
                     )}
-                    {/* Fallback gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-br from-red-950/80 via-black to-orange-950/60" />
+                    {/* Fallback gradient / semi-transparent overlay */}
+                    <div className={`absolute inset-0 bg-gradient-to-br from-red-950/80 via-black to-orange-950/60 ${bgLoaded ? 'opacity-30' : 'opacity-100'} transition-opacity duration-1000`} />
                 </motion.div>
             </AnimatePresence>
 
