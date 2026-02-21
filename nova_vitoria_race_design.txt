@@ -1,0 +1,366 @@
+NOVA VITÓRIA
+CORRIDA DE RUA — SISTEMA INTERATIVO
+Design Document & Guia de Assets
+Cyberpunk Red • Campanha Brasileira
+
+1. VISÃO GERAL DO PROJETO
+Este documento descreve a arquitetura completa, os assets necessários e o prompt de desenvolvimento para o aplicativo interativo de corrida de rua da campanha de Cyberpunk Red ambientada em Nova Vitória, Brasil.
+
+Plataforma: Web app (React + Vite) hospedado no GitHub Pages
+Modelo: 1 jogador ativo + mestre como diretor + outros jogadores como audiência
+Estrutura: 6 segmentos × 3 caminhos = 18 nós narrativos
+Visual: Cyberpunk Red — vermelho/laranja/preto, sujo e distópico
+Assets: ~30 imagens + 8 retratos + ícones de UI
+
+
+2. ARQUITETURA TÉCNICA
+2.1 Stack Tecnológico
+▸  React 18 + Vite — build ultra-rápido, zero configuração
+▸  Tailwind CSS — estilização utilitária com tema customizado
+▸  Framer Motion — animações cinematográficas entre cenas
+▸  Zustand — gerenciamento de estado global simples e reativo
+▸  GitHub Pages — hospedagem gratuita, deploy via gh-pages
+▸  JSON puro — toda a narrativa vive em /src/data/race.json
+
+2.2 Estrutura de Pastas do Projeto
+nova-vitoria-race/
+├── public/
+│   └── assets/
+│       ├── scenes/        ← imagens das cenas (backgrounds)
+│       ├── portraits/     ← retratos dos competidores
+│       ├── icons/         ← ícones de status e UI
+│       └── map/           ← imagem do mapa da corrida
+├── src/
+│   ├── components/        ← componentes React
+│   ├── data/
+│   │   └── race.json      ← TODA a narrativa e configuração
+│   ├── store/             ← estado global (Zustand)
+│   └── App.jsx
+├── index.html
+└── vite.config.js
+
+2.3 Layout da Interface
+A tela é dividida em 4 zonas fixas:
+
+🖼  ZONA CENTRAL (60% da largura) — Cena Atual
+     Imagem de background do trecho atual, texto narrativo dinâmico,
+     3 botões de decisão com nome do caminho + dificuldade + ícone
+
+🗺  ZONA SUPERIOR ESQUERDA — Mini-mapa
+     Mapa linear dos 6 segmentos. Marcador de progresso animado.
+     Caminhos alternativos destacados em tempo real.
+
+👥  ZONA DIREITA — Painel dos Rivais
+     8 retratos empilhados (7 rivais + jogador). Cada um mostra:
+     posição atual, barra de dano, ícone de status. Glow vermelho
+     quando o rival está adjacente ao jogador (risco de sabotagem).
+
+🏎  ZONA INFERIOR — Status do Jogador
+     Dano do veículo, nitro disponível (botão ativável),
+     estabilidade, condição atual e posição na corrida.
+
+
+3. ESTRUTURA NARRATIVA
+3.1 Os 6 Segmentos da Corrida
+Cada segmento tem 3 caminhos possíveis. O mestre pré-escreve todos os textos no race.json. Abaixo está a estrutura sugerida para Nova Vitória:
+
+SEGMENTO 1 — LARGADA (Zona Industrial Sul)
+▸  Caminho A: Pelo corredor principal — rápido, mas congestionado. Dificuldade: Média
+▸  Caminho B: Atalho pelo galpão abandonado — arriscado, piso instável. Dificuldade: Alta
+▸  Caminho C: Pela marginal do canal de esgoto — mais longo, menos rivais. Dificuldade: Baixa
+SEGMENTO 2 — SUBIDA DO VIADUTO (Viaduto Getúlio)
+▸  Caminho A: Pela pista elevada principal — exposição total, rivais visíveis
+▸  Caminho B: Pela rampa de serviço embaixo — mais escuro, menor visibilidade
+▸  Caminho C: Desvio pela rua lateral — mais longo, cruza feira livre
+SEGMENTO 3 — ZONA COMERCIAL (Camelódromo da Vitória)
+▸  Caminho A: Pelo meio da feira — pedestres, caos, oportunidades
+▸  Caminho B: Pela Avenida Beira-Mar — aberta, exposição ao NCPD
+▸  Caminho C: Pelo estacionamento do shopping — terreno privado, segurança armada
+SEGMENTO 4 — FAVELA DA ENCOSTA (Complexo do Morro Vermelho)
+▸  Caminho A: Pela viela principal — território de gang, pedágio ou confronto
+▸  Caminho B: Pelo telhado das casas — acesso alto, risco de queda
+▸  Caminho C: Pela estrada de terra no sopro — mais longa, sem conflito
+SEGMENTO 5 — ZONA PORTUÁRIA (Porto Novo)
+▸  Caminho A: Entre os contêineres — labirinto metálico, armadilhas possíveis
+▸  Caminho B: Pela doca molhada — piso escorregadio, mas linha reta
+▸  Caminho C: Pelo armazém frigorífico — frio extremo, menos rivais
+SEGMENTO 6 — RETA FINAL (Avenida da Independência)
+▸  Caminho A: Reta central — todos visíveis, sabotagem máxima
+▸  Caminho B: Pela calçada — ilegal, pedestres, mais rápido
+▸  Caminho C: Pelo túnel submerso — escuro, desconhecido, tudo ou nada
+
+3.2 Sistema de Estado do Jogo
+Estado do Jogador:
+  position: 1–8  |  vehicleDamage: 0–100  |  nitro: 0–3  |  stability: 0–100
+  currentSegment: 0–5  |  chosenPath: A/B/C  |  statusEffect: null|overheating|locked
+
+Estado de Cada Rival:
+  id  |  name  |  portrait  |  position  |  damage  |  style  |  specialAbility
+  style: aggressive | technical | unpredictable | saboteur
+
+Lógica de Sabotagem (automática, ajustável pelo mestre):
+  Se rival adjacente (posição ±1) e style = saboteur → trigger evento
+  O mestre pode cancelar ou modificar antes do resultado aparecer
+
+
+4. LISTA COMPLETA DE ASSETS
+Abaixo está TUDO que você precisa gerar/criar antes de rodar o app. Nomes de arquivo são exatos — o código vai buscar por esses nomes.
+
+4.1 Retratos dos Competidores (9 imagens)
+Pasta: /public/assets/portraits/
+Dimensão: 200×200px — formato quadrado, enquadramento rosto + ombros, estilo Cyberpunk Red
+
+Arquivo
+Dimensão
+Descrição
+player.png
+200×200px
+O personagem do jogador
+rival_01.png
+200×200px
+Rival 1 — estilo agressivo (ex: cara com implantes no rosto, cicatrizes)
+rival_02.png
+200×200px
+Rival 2 — estilo técnico (ex: óculos de pilotagem, postura fria)
+rival_03.png
+200×200px
+Rival 3 — estilo imprevisível (ex: sorriso louco, roupa caótica)
+rival_04.png
+200×200px
+Rival 4 — estilo sabotador (ex: olhar oblíquo, mão com ferramentas)
+rival_05.png
+200×200px
+Rival 5 — pilota profissional (ex: macacão de corrida desgastado)
+rival_06.png
+200×200px
+Rival 6 — corpo pesado, cyborg (ex: braço mecânico, físico imponente)
+rival_07.png
+200×200px
+Rival 7 — jovem hacker (ex: capuz, tela no pulso, ar desdenhoso)
+
+4.2 Imagens de Cena — Backgrounds (18 imagens)
+Pasta: /public/assets/scenes/
+Dimensão: 1280×720px (16:9) — perspectiva de piloto, estilo distópico brasileiro + neon
+
+Arquivo
+Dimensão
+Descrição
+seg1_pathA.png
+1280×720px
+Seg.1/A: Corredor industrial com carros lado a lado, fumaça, neon
+seg1_pathB.png
+1280×720px
+Seg.1/B: Interior escuro de galpão abandonado, piso rachado, vigas
+seg1_pathC.png
+1280×720px
+Seg.1/C: Marginal à beira de canal de esgoto, céu noturno poluído
+seg2_pathA.png
+1280×720px
+Seg.2/A: Vista alta do viaduto, cidade abaixo, rivais visíveis
+seg2_pathB.png
+1280×720px
+Seg.2/B: Baixo do viaduto, sombras, pilares de concreto, grafite
+seg2_pathC.png
+1280×720px
+Seg.2/C: Rua lateral movimentada, barracas de feira, cabos elétricos
+seg3_pathA.png
+1280×720px
+Seg.3/A: Dentro da feira, pedestres se jogando, lojas coloridas
+seg3_pathB.png
+1280×720px
+Seg.3/B: Avenida beira-mar à noite, hologramas, viatura do NCPD ao fundo
+seg3_pathC.png
+1280×720px
+Seg.3/C: Estacionamento coberto de shopping, câmeras, seguranças
+seg4_pathA.png
+1280×720px
+Seg.4/A: Viela estreita na favela, fios cruzando, silhuetas de gang
+seg4_pathB.png
+1280×720px
+Seg.4/B: Telhados de casas precárias, visão panorâmica da cidade
+seg4_pathC.png
+1280×720px
+Seg.4/C: Estrada de terra com mato, calmaria, poeira
+seg5_pathA.png
+1280×720px
+Seg.5/A: Labirinto de contêineres coloridos, sombras pesadas, guindaste
+seg5_pathB.png
+1280×720px
+Seg.5/B: Doca molhada à beira d'água, reflexo de neon, piso escorregadio
+seg5_pathC.png
+1280×720px
+Seg.5/C: Interior de armazém frigorífico, névoa branca, luz fria
+seg6_pathA.png
+1280×720px
+Seg.6/A: Avenida larga e iluminada, todos os rivais visíveis, multidão
+seg6_pathB.png
+1280×720px
+Seg.6/B: Calçada larga, pedestres se dispersando, lojas com neon
+seg6_pathC.png
+1280×720px
+Seg.6/C: Túnel submerso, completamente escuro, apenas faróis
+
+4.3 Imagem do Mapa (1 imagem)
+Pasta: /public/assets/map/
+
+Arquivo
+Dimensão
+Descrição
+race_map.png
+800×600px
+Mapa top-down estilizado de Nova Vitória. Mostra o traçado da corrida do ponto A (Zona Industrial) ao ponto B (Av. Independência), com os 6 segmentos marcados e os nomes dos locais em português. Estilo: mapa de holo-projeção, linhas laranja sobre fundo escuro.
+
+4.4 Imagens de Eventos Especiais (4 imagens)
+Pasta: /public/assets/scenes/ (mesma pasta, prefixo 'event_')
+
+Arquivo
+Dimensão
+Descrição
+event_sabotage.png
+1280×720px
+Rival bloqueando passagem, faíscas, colisão iminente
+event_ncpd.png
+1280×720px
+Viatura do NCPD cruzando na frente, sirenes, hologramas de 'PARE'
+event_nitro.png
+1280×720px
+Efeito de boost: fundo borrado, velocidade extrema, neon estendido
+event_crash.png
+1280×720px
+Acidente lateral, fumaça, detritos, rival saindo de cena
+
+4.5 Ícones de UI (SVG, opcionais)
+Pasta: /public/assets/icons/
+Se não quiser criar, o código usará ícones do Lucide React como fallback automático.
+
+Arquivo
+Dimensão
+Descrição
+icon_nitro.svg
+64×64px
+Chama / raio estilizado
+icon_damage.svg
+64×64px
+Carro amassado ou barra de vida
+icon_stability.svg
+64×64px
+Volante ou giroscópio
+icon_saboteur.svg
+64×64px
+Caveira com chave inglesa
+icon_aggressive.svg
+64×64px
+Chama ou punho
+icon_technical.svg
+64×64px
+Engrenagem ou chip
+icon_unpredictable.svg
+64×64px
+Dados ou ponto de interrogação
+
+
+5. PROMPT DE DESENVOLVIMENTO
+Copie e cole o prompt abaixo integralmente num agente de desenvolvimento full-stack (Claude, Cursor, v0, etc). Ele contém tudo necessário para gerar o projeto completo.
+
+Você é um desenvolvedor full-stack especialista em React, Vite e Tailwind CSS. Sua tarefa é criar um aplicativo web interativo completo para uma sessão de RPG de Cyberpunk Red.
+
+═══ CONTEXTO DO PROJETO ═══
+Nome: Nova Vitória Race — Sistema Interativo de Corrida
+Plataforma: GitHub Pages (React + Vite)
+Usuário: Mestre de RPG que controla o app; 1 jogador que interage; outros assistem
+Tema visual: Cyberpunk Red — paleta vermelho/laranja/preto, UI suja e distópica
+
+═══ ESTRUTURA DO APP ═══
+O app é uma corrida narrativa com 6 segmentos. Em cada segmento, o jogador escolhe 1 de 3 caminhos. Cada escolha avança a narrativa e atualiza o estado da corrida.
+
+═══ LAYOUT DA TELA ═══
+ZONA ESQUERDA (20%): Mini-mapa da corrida com 6 checkpoints. Indica segmento atual com marcador animado. Caminhos alternativos destacados.
+ZONA CENTRAL (55%): Background image do segmento/caminho atual (1280×720). Overlay escuro semitransparente no rodapé. Texto narrativo em fonte monoespaçada. Três botões de decisão com: nome do caminho, nível de dificuldade (baixa/média/alta), ícone representativo.
+ZONA DIREITA (25%): 8 retratos empilhados (player + 7 rivais). Cada retrato: foto 200×200 com borda colorida por posição, nome, posição (1º–8º), barra de dano mini, ícone de estilo de pilotagem. Glow vermelho pulsante quando rival está em posição adjacente ao jogador.
+ZONA INFERIOR: Barra de status do jogador: posição atual, dano do veículo (barra), nitro (3 botões clicáveis), estabilidade (barra), efeito de status atual. Botão 'PAINEL DO MESTRE' discreto no canto.
+
+═══ PAINEL DO MESTRE (modal/sidebar) ═══
+Acessado por senha simples ou botão oculto. Permite: forçar resultado de dado (1–10), ativar evento especial (sabotagem, NCPD, nitro, acidente), atualizar posição/dano/nitro de qualquer competidor, avançar/voltar segmento manualmente, resetar corrida completa.
+
+═══ SISTEMA DE DADOS HÍBRIDO ═══
+Quando o jogador escolhe um caminho, o app rola 1d10 internamente. O resultado é mostrado ao mestre no painel antes de ser aplicado. O mestre pode substituir o resultado por qualquer valor entre 1–10. Somente após confirmação do mestre a narrativa avança e o estado atualiza.
+Fórmula de resultado: resultado = (valorDado + modificadorCaminho + modificadorEstado) vs dificuldadeSegmento. Gera: ganhou posição / perdeu posição / dano / evento especial.
+
+═══ race.json — ESTRUTURA DE DADOS ═══
+O arquivo /src/data/race.json define toda a corrida. Estrutura:
+{
+  "race": {
+    "title": "Corrida de Nova Vitória",
+    "rivals": [ { "id": "rival_01", "name": "Nome", "portrait": "rival_01.png",
+                   "style": "aggressive|technical|unpredictable|saboteur",
+                   "specialAbility": "descrição" } ],
+    "segments": [
+      { "id": 1, "name": "Largada", "location": "Zona Industrial Sul",
+        "paths": [
+          { "id": "A", "name": "Corredor Principal", "difficulty": "medium",
+            "image": "seg1_pathA.png",
+            "narrative": "Texto que aparece ao escolher este caminho...",
+            "outcomes": {
+              "success": { "minRoll": 6, "positionChange": +1, "narrative": "..." },
+              "partial": { "minRoll": 3, "damageIncrease": 15, "narrative": "..." },
+              "failure": { "minRoll": 1, "positionChange": -1, "damageIncrease": 25, "narrative": "..." }
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
+
+═══ VISUAL E TEMA ═══
+Paleta principal: bg-black, text-orange-400, accent red-700, borders red-900. Fonte de narrativa: monospace (JetBrains Mono ou Courier New). Título/HUD: bold, uppercase, letter-spacing amplo. Efeitos: scanlines CSS sobre backgrounds, flicker sutil em textos de HUD, transição entre cenas com glitch effect (CSS filter). Botões de decisão: borda sólida, hover com glow laranja, texto uppercase, ícone à esquerda.
+
+═══ ANIMAÇÕES ═══
+Transição entre segmentos: fade to black + glitch de 0.5s + fade in. Quando rival entra em zona de ameaça: retrato dele pisca em vermelho. Quando resultado do dado é revelado: número rola de 1 a X em 1 segundo. Quando jogador usa nitro: flash branco + shake na tela central.
+
+═══ EVENTOS ESPECIAIS ═══
+Sabotagem: rival adjacente tenta interferir. Aparece como overlay de alerta no centro com 3 opções de resposta (desviar, confrontar, ignorar). NCPD: viatura bloqueia caminho, força novo teste de dado. Nitro: jogador ativa boost, modificador +3 no próximo dado, conta como 1 uso. Acidente: rival sai da corrida, posições redistribuídas.
+
+═══ ENTREGÁVEIS ESPERADOS ═══
+1. Projeto React completo com todos os componentes separados
+2. race.json populado com narrativa de exemplo para os 6 segmentos × 3 caminhos
+3. Tailwind config com tema cyberpunk customizado
+4. README.md com instruções de deploy no GitHub Pages
+5. O app deve funcionar offline após primeiro carregamento (sem backend)
+6. Assets são referenciados por path relativo — o projeto deve funcionar com os arquivos de imagem na pasta /public/assets/ conforme especificado no design document
+
+Crie o projeto completo agora, começando pela estrutura de arquivos e depois cada componente.
+
+Após gerar o projeto com o prompt acima, substitua o race.json de exemplo pelos seus textos narrativos reais e adicione os assets na pasta /public/assets/ com os nomes exatos listados na seção 4.
+
+
+6. CHECKLIST DE PRODUÇÃO
+6.1 Assets a Criar
+▸  [ ] 1 retrato do personagem jogador (player.png)
+▸  [ ] 7 retratos dos rivais (rival_01.png a rival_07.png)
+▸  [ ] 18 imagens de cena (seg1_pathA.png … seg6_pathC.png)
+▸  [ ] 4 imagens de eventos (event_sabotage, event_ncpd, event_nitro, event_crash)
+▸  [ ] 1 mapa da corrida (race_map.png)
+▸  [ ] 7 ícones SVG de UI (opcionais — tem fallback automático)
+
+6.2 Conteúdo a Escrever
+▸  [ ] Textos narrativos para cada um dos 18 nós (6 seg × 3 caminhos)
+▸  [ ] Textos de outcome para cada nó (sucesso / parcial / falha = 54 textos no total)
+▸  [ ] Nomes e backstory dos 7 rivais
+▸  [ ] Habilidade especial de cada rival
+▸  [ ] Textos dos 4 eventos especiais (sabotagem, NCPD, nitro, acidente)
+
+6.3 Setup Técnico
+▸  [ ] Criar repositório no GitHub
+▸  [ ] Rodar o prompt de desenvolvimento no agente escolhido
+▸  [ ] Substituir race.json de exemplo pelo seu conteúdo real
+▸  [ ] Adicionar assets na pasta /public/assets/
+▸  [ ] Configurar GitHub Pages (Settings → Pages → Branch: gh-pages)
+▸  [ ] Testar no celular e no desktop antes da sessão
+
+
+Dica Final — Prompt para as Imagens
+cyberpunk street racing scene, [DESCRIÇÃO DO LOCAL], Brasil, favela aesthetic, neon lights orange and red, gritty dystopian, night, first-person driver perspective, cinematic, dark atmosphere, holographic signs in portuguese, 16:9
+
+Para os retratos:
+cyberpunk character portrait, [DESCRIÇÃO DO PERSONAGEM], brazilian, Cyberpunk Red RPG style, gritty, neon backlight, close up face and shoulders, dark background, orange and red tones
