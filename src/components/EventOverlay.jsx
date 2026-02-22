@@ -43,8 +43,13 @@ const EVENT_CONFIG = {
 }
 
 export default function EventOverlay() {
-    const { currentEvent, clearEvent } = useRaceStore()
-    const config = currentEvent ? EVENT_CONFIG[currentEvent] : null
+    const { currentEvent, clearEvent, rivals } = useRaceStore()
+    // currentEvent can now be an object { type: 'crash', targets: [...] } or a string
+    const eventType = typeof currentEvent === 'string' ? currentEvent : currentEvent?.type
+    const config = eventType ? EVENT_CONFIG[eventType] : null
+
+    // Helper to get raw state for crash rendering
+    const getRaceStoreState = useRaceStore.getState;
 
     return (
         <AnimatePresence>
@@ -61,33 +66,50 @@ export default function EventOverlay() {
                         animate={{ scale: 1, y: 0, opacity: 1 }}
                         exit={{ scale: 0.7, y: 40, opacity: 0 }}
                         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                        className={`relative border-2 ${config.color} p-0 w-[480px] max-w-[90vw] overflow-hidden`}
+                        className={`relative border-2 ${config.color} p-0 overflow-hidden ${eventType === 'crash' ? 'w-[800px]' : 'w-[480px]'} max-w-[90vw]`}
                         style={{ boxShadow: '0 0 60px rgba(220, 38, 38, 0.5)' }}
                     >
-                        {/* Event image background */}
-                        <div className="relative h-32 overflow-hidden">
-                            <img
-                                src={`./assets/scenes/${config.image}`}
-                                alt={config.title}
-                                className="w-full h-full object-cover opacity-60"
-                                onError={(e) => e.target.style.display = 'none'}
-                            />
+                        {/* Event image background / dynamic crash image */}
+                        <div className={`relative overflow-hidden flex items-center justify-center bg-black ${eventType === 'crash' ? 'h-64' : 'h-32'}`}>
+                            {eventType === 'crash' && typeof currentEvent === 'object' && currentEvent.targets ? (
+                                <div className="absolute inset-0 flex items-center justify-center gap-6 bg-red-950/30">
+                                    {currentEvent.targets.map(t => (
+                                        <div key={t.id} className="relative w-40 h-40 border-4 border-red-600 animate-pulse shadow-[0_0_30px_rgba(220,38,38,0.8)]">
+                                            <img src={`./assets/portraits/${t.portrait}`} className="w-full h-full object-cover grayscale opacity-50 sepia-[.5] hue-rotate-[-50deg]" />
+                                            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                                                <Skull className="text-red-500 hover:text-red-400 drop-shadow-[0_0_10px_rgba(220,38,38,1)]" size={80} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <img
+                                    src={`./assets/scenes/${config.image}`}
+                                    alt={config.title}
+                                    className="w-full h-full object-cover opacity-60"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                />
+                            )}
                             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80" />
                             <div className="absolute bottom-0 left-0 right-0 p-4">
                                 <div className="flex items-center gap-3">
-                                    <config.icon size={24} className={config.headerColor} />
+                                    <config.icon size={eventType === 'crash' ? 48 : 24} className={config.headerColor} />
                                     <div>
-                                        <div className={`text-xl font-display font-bold uppercase tracking-widest ${config.headerColor}`}>
+                                        <div className={`${eventType === 'crash' ? 'text-3xl font-black' : 'text-xl font-bold'} font-display uppercase tracking-widest ${config.headerColor}`}>
                                             {config.title}
                                         </div>
-                                        <div className="text-[10px] text-gray-400 font-mono">{config.subtitle}</div>
+                                        <div className={`${eventType === 'crash' ? 'text-sm' : 'text-[10px]'} text-gray-400 font-mono`}>
+                                            {eventType === 'crash' && typeof currentEvent === 'object'
+                                                ? `${currentEvent.targets.map(t => t.name).join(', ')} foi eliminado.`
+                                                : config.subtitle}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         {/* Options for sabotage */}
-                        {currentEvent === 'sabotage' && config.options && (
+                        {eventType === 'sabotage' && config.options && (
                             <div className="p-4">
                                 <div className="text-[9px] text-red-700 uppercase tracking-widest mb-3 font-mono">
                                     Escolha sua resposta:
@@ -111,7 +133,7 @@ export default function EventOverlay() {
                         )}
 
                         {/* Close button for non-choice events */}
-                        {currentEvent !== 'sabotage' && (
+                        {currentEvent !== 'sabotage' && currentEvent !== 'crash' && (
                             <div className="p-4 flex justify-center">
                                 <motion.button
                                     onClick={clearEvent}
@@ -124,6 +146,27 @@ export default function EventOverlay() {
                                 </motion.button>
                             </div>
                         )}
+
+                        {/* Special info for crash event */}
+                        {currentEvent === 'crash' && (() => {
+                            const { currentEvent: evObj } = getRaceStoreState(); // we need the actual event object which has targets
+                            return (
+                                <div className="p-8 flex flex-col items-center">
+                                    <div className="text-gray-300 font-mono text-center text-lg mb-8">
+                                        Detectado encerramento definitivo de chassi. O competidor não pode mais continuar na corrida.
+                                    </div>
+                                    <motion.button
+                                        onClick={clearEvent}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        className={`border-4 px-12 py-5 font-display font-bold text-2xl uppercase tracking-widest transition-all
+                                        ${config.headerColor} border-current hover:bg-white/10`}
+                                    >
+                                        RECALCULAR ROTAS
+                                    </motion.button>
+                                </div>
+                            )
+                        })()}
 
                         {/* Corner X */}
                         <button

@@ -1,6 +1,6 @@
 import { useRaceStore } from '../store/useRaceStore'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Zap, AlertTriangle, Activity } from 'lucide-react'
+import { Zap, AlertTriangle, Activity, Magnet, Cpu, Flame, CloudFog } from 'lucide-react'
 
 function StatusBadge({ effect }) {
     if (!effect) return null
@@ -9,6 +9,20 @@ function StatusBadge({ effect }) {
         <div className="text-sm bg-red-900 border border-red-600 text-red-200 px-4 py-2 font-mono animate-pulse">
             {labels[effect] || effect}
         </div>
+    )
+}
+
+function SkillIcon({ active, icon: Icon, label, color, description }) {
+    return (
+        <div
+            className={`w-12 h-12 border flex items-center justify-center transition-all ${active
+                    ? 'border-red-600 bg-red-950/40 ' + color
+                    : 'border-red-950 bg-black/40 text-red-950 opacity-40'
+                }`}
+            title={`${label}${active ? ' (Disponível)' : ' (Usado)'}\n${description}`}
+        >
+            <Icon size={24} />
+        </div >
     )
 }
 
@@ -72,7 +86,7 @@ export default function PlayerStatus() {
             <div className="flex flex-col items-center justify-center gap-2 ml-4">
                 <div className="text-sm text-red-700 uppercase tracking-widest">NITRO</div>
                 <div className="flex gap-2">
-                    {[0, 1, 2].map(i => (
+                    {[0, 1].map(i => (
                         <motion.button
                             key={i}
                             onClick={i === 0 && canUseNitro ? activateNitro : undefined}
@@ -90,6 +104,17 @@ export default function PlayerStatus() {
                             <Zap size={24} />
                         </motion.button>
                     ))}
+                </div>
+            </div>
+
+            {/* Sistemas Ofensivos */}
+            <div className="flex flex-col justify-center gap-2 ml-4 border-l border-red-900 pl-4">
+                <div className="text-sm text-red-700 uppercase tracking-widest text-center">SISTEMAS OFENSIVOS</div>
+                <div className="flex gap-2">
+                    <SkillIcon active={player.skills?.harpoon} icon={Magnet} label="Arpão Magnético" description="Fisga o rival e rouba sua posição instantaneamente. Ganha +10 de instabilidade." color="text-blue-400" />
+                    <SkillIcon active={player.skills?.override} icon={Cpu} label="Override" description="Aplica um vírus no rival. Ele terá -3 no próximo rolamento de segmento." color="text-purple-400" />
+                    <SkillIcon active={player.skills?.plasma} icon={Flame} label="Plasma Lateral" description="Dispara uma onda de calor pura. Causa 40% de dano extremo." color="text-orange-500" />
+                    <SkillIcon active={player.skills?.smoke} icon={CloudFog} label="Cortina de Fumaça" description="Impede que rivais o sigam de perto com eficácia neste confronto." color="text-gray-400" />
                 </div>
             </div>
 

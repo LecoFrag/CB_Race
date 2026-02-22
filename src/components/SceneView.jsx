@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useRaceStore } from '../store/useRaceStore'
-import { MapPin, ChevronRight } from 'lucide-react'
+import { MapPin, ChevronRight, ShieldAlert, Swords, X, Skull, EyeOff, Zap, Flame, Magnet, Cpu, CloudFog } from 'lucide-react'
 
 const PATH_ICONS = {
     default: MapPin,
@@ -60,6 +60,7 @@ export default function SceneView() {
     const {
         phase, player, raceData, pendingPath, currentNarrative,
         currentOutcomeNarrative, lastOutcome, choosePath, advanceSegment, submitManualRoll,
+        pendingConfrontation, triggerConfrontation, resolveConfrontationDefense, resolveConfrontationAttack, rivals
     } = useRaceStore()
 
     const [showDice, setShowDice] = useState(false)
@@ -212,6 +213,31 @@ export default function SceneView() {
                     </motion.div>
                 )}
 
+                {/* Endgame / Defeat Phase */}
+                {phase === 'finished' && player.vehicleDamage >= 100 && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex-1 flex flex-col justify-center items-center relative z-20"
+                    >
+                        <div className="bg-red-950/90 border-4 border-red-600 p-12 text-center shadow-[0_0_100px_rgba(220,38,38,0.8)] max-w-2xl w-full">
+                            <Skull size={80} className="text-red-500 mx-auto mb-6 animate-pulse" />
+                            <h1 className="text-6xl font-display font-bold text-red-500 mb-4 tracking-widest uppercase">
+                                VEÍCULO DESTRUÍDO
+                            </h1>
+                            <p className="text-xl text-red-300 font-mono mb-8">
+                                Seu chassi cedeu aos danos extremos. Você está fora da corrida.
+                            </p>
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="bg-black border border-red-500 text-red-400 px-8 py-4 font-display font-bold text-xl uppercase tracking-widest hover:bg-red-900/50 hover:text-white transition-all"
+                            >
+                                REINICIAR SISTEMAS
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* Path buttons — choosing phase */}
                 {(phase === 'choosing') && (
                     <motion.div
@@ -259,14 +285,163 @@ export default function SceneView() {
                         animate={{ opacity: 1 }}
                         className="flex justify-center mt-8 mb-4 relative z-20"
                     >
-                        <motion.button
-                            onClick={advanceSegment}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="btn-path bg-red-900/40 border-2 border-red-600 text-red-200 px-12 py-5 font-display font-bold uppercase tracking-widest text-xl hover:bg-red-800/60 hover:border-red-400 hover:text-white transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]"
-                        >
-                            {player.currentSegment >= raceData.segments.length - 1 ? '🏁 ENCERRAR CORRIDA' : '▸ PRÓXIMO SEGMENTO'}
-                        </motion.button>
+                        {pendingConfrontation ? (
+                            <motion.button
+                                onClick={triggerConfrontation}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="btn-path bg-red-900/80 border-2 border-orange-500 text-orange-200 px-12 py-5 font-display font-bold uppercase tracking-widest text-xl hover:bg-orange-800 hover:border-orange-400 hover:text-white transition-all shadow-[0_0_20px_rgba(249,115,22,0.6)]"
+                            >
+                                ⚠ ALERTA DE CONFRONTO
+                            </motion.button>
+                        ) : (
+                            <motion.button
+                                onClick={advanceSegment}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="btn-path bg-red-900/40 border-2 border-red-600 text-red-200 px-12 py-5 font-display font-bold uppercase tracking-widest text-xl hover:bg-red-800/60 hover:border-red-400 hover:text-white transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                            >
+                                {player.currentSegment >= raceData.segments.length - 1 ? '🏁 ENCERRAR CORRIDA' : '▸ PRÓXIMO SEGMENTO'}
+                            </motion.button>
+                        )}
+                    </motion.div>
+                )}
+
+                {/* Confrontation Phase */}
+                {phase === 'confrontation' && pendingConfrontation && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex-1 flex flex-col justify-center items-center relative z-20"
+                    >
+                        <div className="bg-black/95 border-2 border-red-600 p-8 w-full max-w-3xl shadow-[0_0_50px_rgba(220,38,38,0.3)]">
+                            {(() => {
+                                const npc = rivals.find(r => r.id === pendingConfrontation.npcId);
+                                if (!npc) return null;
+                                return (
+                                    <>
+                                        <div className="text-center mb-8 border-b border-red-900 pb-4">
+                                            <div className="text-red-500 text-sm font-mono uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
+                                                <ShieldAlert size={16} /> FASE DE CONFRONTO
+                                            </div>
+                                            <h2 className="text-4xl font-display font-bold text-orange-400 uppercase tracking-widest animate-flicker">
+                                                ALVO: {npc.name}
+                                            </h2>
+                                        </div>
+
+                                        {pendingConfrontation.stage === 'defense' && (
+                                            <div className="flex flex-col gap-6">
+                                                <div className="bg-red-950/40 border-l-4 border-orange-500 p-4">
+                                                    <p className="text-orange-200 font-mono text-lg">
+                                                        <strong className="text-orange-400">ATAQUE IMINENTE:</strong> O rival posicionou o veículo agressivamente! O que você faz?
+                                                    </p>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-4 mt-4">
+                                                    <button
+                                                        title="50% de chance de evitar 100% do dano físico. Falhar resulta em receber dano total."
+                                                        onClick={() => resolveConfrontationDefense('evade')}
+                                                        className="bg-black border border-blue-500 text-blue-400 p-4 hover:bg-blue-900/40 transition-colors uppercase font-display font-bold flex flex-col items-center group"
+                                                    >
+                                                        <span>Manobra Evasiva</span>
+                                                        <span className="text-[10px] font-mono mt-2 opacity-50 group-hover:opacity-100">🛈 Info</span>
+                                                    </button>
+                                                    <button
+                                                        title="Garante redução do dano físico pela metade fixamente. Não permite evitar mitigação completa."
+                                                        onClick={() => resolveConfrontationDefense('brace')}
+                                                        className="bg-black border border-orange-500 text-orange-400 p-4 hover:bg-orange-900/40 transition-colors uppercase font-display font-bold flex flex-col items-center group"
+                                                    >
+                                                        <span>Suportar Impacto</span>
+                                                        <span className="text-[10px] font-mono mt-2 opacity-50 group-hover:opacity-100">🛈 Info</span>
+                                                    </button>
+                                                    <button
+                                                        title="Inútil contra ataques físicos, mas anula completamente e bloqueia tentativas de invasão digital."
+                                                        onClick={() => resolveConfrontationDefense('firewall')}
+                                                        className="bg-black border border-purple-500 text-purple-400 p-4 hover:bg-purple-900/40 transition-colors uppercase font-display font-bold flex flex-col items-center group"
+                                                    >
+                                                        <span>Firewall / Override</span>
+                                                        <span className="text-[10px] font-mono mt-2 opacity-50 group-hover:opacity-100">🛈 Info</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {pendingConfrontation.stage === 'attack' && (
+                                            <div className="flex flex-col gap-6">
+                                                <div className="bg-green-950/20 border-l-4 border-green-500 p-4 mb-4">
+                                                    <p className="text-green-300 font-mono">
+                                                        {pendingConfrontation.actionNarrative}
+                                                    </p>
+                                                </div>
+
+                                                <div className="text-center text-sm font-mono text-red-500 uppercase tracking-widest mb-2">Sua Janela de Oportunidade</div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <button
+                                                        title="Fisga o rival e rouba sua posição instantaneamente. Ganha +10 de instabilidade."
+                                                        disabled={!player.skills.harpoon} onClick={() => resolveConfrontationAttack('harpoon')} className="bg-black border border-blue-600 disabled:border-red-950 disabled:text-red-950 disabled:bg-black p-4 text-blue-400 hover:bg-blue-900/30 transition-colors flex items-center justify-between font-display uppercase font-bold text-left relative group">
+                                                        <div className="flex flex-col gap-1 items-start">
+                                                            <div className="flex items-center gap-3"><Magnet size={24} /> <span>Arpão Magnético</span></div>
+                                                            <span className="text-xs font-mono font-normal pl-9">Troca Posição (+Dano base)</span>
+                                                        </div>
+                                                        <span className="text-blue-500 opacity-50 group-hover:opacity-100 transition-opacity">🛈</span>
+                                                    </button>
+                                                    <button
+                                                        title="Aplica um vírus no rival. Ele terá desvantagem massiva no próximo rolamento de segmento."
+                                                        disabled={!player.skills.override} onClick={() => resolveConfrontationAttack('override')} className="bg-black border border-purple-600 disabled:border-red-950 disabled:text-red-950 disabled:bg-black p-4 text-purple-400 hover:bg-purple-900/30 transition-colors flex items-center justify-between font-display uppercase font-bold text-left relative group">
+                                                        <div className="flex flex-col gap-1 items-start">
+                                                            <div className="flex items-center gap-3"><Cpu size={24} /> <span>Override Remoto</span></div>
+                                                            <span className="text-xs font-mono font-normal pl-9">Desvantagem no NPC</span>
+                                                        </div>
+                                                        <span className="text-purple-500 opacity-50 group-hover:opacity-100 transition-opacity">🛈</span>
+                                                    </button>
+                                                    <button
+                                                        title="Dispara uma onda de calor pura. Causa 40% de dano extremo instantâneo no competidor."
+                                                        disabled={!player.skills.plasma} onClick={() => resolveConfrontationAttack('plasma')} className="bg-black border border-orange-600 disabled:border-red-950 disabled:text-red-950 disabled:bg-black p-4 text-orange-400 hover:bg-orange-900/30 transition-colors flex items-center justify-between font-display uppercase font-bold text-left relative group">
+                                                        <div className="flex flex-col gap-1 items-start">
+                                                            <div className="flex items-center gap-3"><Flame size={24} /> <span>Plasma Lateral</span></div>
+                                                            <span className="text-xs font-mono font-normal pl-9">Dano Massivo</span>
+                                                        </div>
+                                                        <span className="text-orange-500 opacity-50 group-hover:opacity-100 transition-opacity">🛈</span>
+                                                    </button>
+                                                    <button
+                                                        title="Impede que rivais o sigam de perto com eficácia neste confronto, limpando abordagens agressivas."
+                                                        disabled={!player.skills.smoke} onClick={() => resolveConfrontationAttack('smoke')} className="bg-black border border-gray-500 disabled:border-red-950 disabled:text-red-950 disabled:bg-black p-4 text-gray-300 hover:bg-gray-800/30 transition-colors flex items-center justify-between font-display uppercase font-bold text-left relative group">
+                                                        <div className="flex flex-col gap-1 items-start">
+                                                            <div className="flex items-center gap-3"><CloudFog size={24} /> <span>Cortina Fumaça</span></div>
+                                                            <span className="text-xs font-mono font-normal pl-9">Fuga Segura</span>
+                                                        </div>
+                                                        <span className="text-gray-500 opacity-50 group-hover:opacity-100 transition-opacity">🛈</span>
+                                                    </button>
+                                                </div>
+
+                                                <div className="flex justify-center mt-6">
+                                                    <button onClick={() => resolveConfrontationAttack('skip')} className="text-red-500 hover:text-orange-400 uppercase font-mono tracking-widest underline decoration-red-900 underline-offset-4">
+                                                        Seguir Em Frente
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {pendingConfrontation.stage === 'result' && (
+                                            <div className="flex flex-col gap-6 items-center">
+                                                <div className="bg-black border border-orange-500 p-6 text-center shadow-[0_0_20px_rgba(249,115,22,0.2)]">
+                                                    <p className="text-xl text-orange-200 font-mono leading-relaxed">
+                                                        {pendingConfrontation.actionNarrative}
+                                                    </p>
+                                                </div>
+                                                <motion.button
+                                                    onClick={advanceSegment}
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="mt-4 btn-path bg-red-900/40 border-2 border-red-600 text-red-200 px-12 py-5 font-display font-bold uppercase tracking-widest text-xl hover:bg-red-800/60 hover:border-red-400 hover:text-white transition-all shadow-[0_0_20px_rgba(220,38,38,0.4)]"
+                                                >
+                                                    {player.currentSegment >= raceData.segments.length - 1 ? '🏁 ENCERRAR CORRIDA' : '▸ PRÓXIMO SEGMENTO'}
+                                                </motion.button>
+                                            </div>
+                                        )}
+                                    </>
+                                );
+                            })()}
+                        </div>
                     </motion.div>
                 )}
 
