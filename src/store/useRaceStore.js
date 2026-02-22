@@ -152,7 +152,7 @@ export const useRaceStore = create((set, get) => ({
         const rollWithNitro = nitroActive ? Math.min(10, finalRoll + 3) : finalRoll
 
         const path = pendingPath
-        const totalRoll = Math.max(1, rollWithNitro + (path.pathModifier || 0)) // Prevent raw below 1
+        const totalRoll = Math.max(1, rollWithNitro) // Prevent raw below 1
 
         // Determine narrative outcome
         let outcomeNarrativeType;
@@ -207,18 +207,31 @@ export const useRaceStore = create((set, get) => ({
 
         const newLogs = [];
         const allOldRacers = [player, ...rivals];
-        allOldRacers.forEach(r => {
+
+        // Format the table data for the race log
+        const tableData = allOldRacers.map(r => {
             const oldPos = r.position;
             const newPos = newRanks[r.id];
-            if (oldPos && newPos && oldPos !== newPos) {
-                const moved = oldPos > newPos ? 'avançou para' : 'caiu para';
-                newLogs.push({
-                    id: Date.now() + Math.random(),
-                    text: `${r.name} ${moved} ${newPos}º na rolagem de percurso.`,
-                    type: 'position',
-                    segment: player.currentSegment + 1
-                });
+
+            const basePoints = 9 - oldPos;
+            const change = r.id === 'player' ? playerOutcome.points : (rivalChanges[r.id] || 0);
+
+            return {
+                id: r.id,
+                name: r.name,
+                newPos,
+                oldPos,
+                basePoints,
+                modifier: change,
+                total: basePoints + change
             }
+        }).sort((a, b) => a.newPos - b.newPos); // Sort to show 1st place at the top
+
+        newLogs.push({
+            id: Date.now() + Math.random(),
+            type: 'round_summary',
+            segment: player.currentSegment + 1,
+            tableData
         });
 
         let newDamage = Math.min(100, player.vehicleDamage + playerOutcome.damage)
