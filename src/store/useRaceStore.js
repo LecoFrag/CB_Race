@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import raceData from '../data/race.json'
 
+let nitroTimeout = null;
+
 // Function to ensure unique positions 1-8 based on points and original position
 function calculateNewRankings(player, rivals, playerPointsGained, rivalPointsGained) {
     const allRacers = [
@@ -535,8 +537,12 @@ export const useRaceStore = create((set, get) => ({
     activateNitro: () => {
         const { player } = get()
         if (player.nitro <= 0) return
+
+        if (nitroTimeout) clearTimeout(nitroTimeout);
         set({ nitroThisTurn: true, currentEvent: 'nitro' })
-        setTimeout(() => set({ currentEvent: null }), 2000)
+        nitroTimeout = setTimeout(() => {
+            set({ currentEvent: null })
+        }, 5000)
     },
 
     // Ativar eventos especiais manualmente via UI futura se nescessário

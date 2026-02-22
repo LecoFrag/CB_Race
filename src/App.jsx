@@ -25,12 +25,25 @@ function NitroFlash() {
                     />
                     <motion.div
                         className="fixed inset-y-0 right-0 z-40 pointer-events-none flex items-center justify-end overflow-hidden"
-                        initial={{ x: '100%', opacity: 0, scale: 1.1 }}
-                        animate={{ x: '0%', opacity: 1, scale: 1 }}
+                        initial={{ x: '100%', opacity: 0 }}
+                        animate={{ x: '0%', opacity: 1 }}
                         exit={{ x: '100%', opacity: 0 }}
-                        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 60, mass: 1.2 }}
                     >
-                        <img src="./assets/portraits/player_focus.png" className="h-[40vh] object-cover max-w-none border-l-4 border-orange-500 shadow-[-20px_0_50px_rgba(249,115,22,0.5)]" />
+                        <div className="flex items-center h-[40vh] gap-6 pr-0 drop-shadow-[0_0_20px_rgba(249,115,22,0.3)]">
+                            <motion.img
+                                initial={{ x: 50, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 0.4, type: 'spring' }}
+                                src="./assets/portraits/quebrar.png"
+                                alt="Eu vou botar pra quebrar"
+                                className="h-[40rem] object-contain drop-shadow-[0_0_15px_rgba(255,255,255,0.6)]"
+                            />
+                            <img
+                                src="./assets/portraits/player_focus.png"
+                                className="h-full object-cover max-w-none border-l-4 border-orange-500 shadow-[-20px_0_50px_rgba(249,115,22,0.5)]"
+                            />
+                        </div>
                     </motion.div>
                 </>
             )}

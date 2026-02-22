@@ -32,7 +32,7 @@ function SkillIcon({ count, icon: Icon, label, color, description }) {
 }
 
 export default function PlayerStatus() {
-    const { player, phase, activateNitro } = useRaceStore()
+    const { player, phase, activateNitro, nitroThisTurn } = useRaceStore()
     const canUseNitro = player.nitro > 0 && (phase === 'choosing' || phase === 'inputRoll')
 
     const damageColor = player.vehicleDamage < 30
@@ -41,6 +41,12 @@ export default function PlayerStatus() {
                 ? '#dc2626' : '#7f1d1d'
 
     const stabilityPct = Math.max(0, player.stability)
+
+    const modifier = (player.nextTurnModifier || 0) + (nitroThisTurn ? 3 : 0);
+    const modColor = modifier > 0 ? 'text-green-400 border-green-500 bg-green-950/30' :
+        modifier < 0 ? 'text-red-400 border-red-500 bg-red-950/30' :
+            'text-gray-500 border-gray-700 bg-black/40';
+    const modPlus = modifier > 0 ? '+' : '';
 
     return (
         <div className="h-full flex items-stretch gap-6 px-6 py-4 cyber-panel border-t-2 border-red-900">
@@ -109,6 +115,14 @@ export default function PlayerStatus() {
                             <Zap size={24} />
                         </motion.button>
                     ))}
+                </div>
+            </div>
+
+            {/* Modifier */}
+            <div className="flex flex-col items-center justify-center gap-2 ml-4 relative">
+                <div className="text-[10px] sm:text-xs text-red-700 uppercase tracking-widest text-center leading-tight font-mono">Modificador<br />Ativo</div>
+                <div className={`w-14 h-14 border flex flex-col items-center justify-center font-display font-bold text-2xl transition-colors ${modColor}`} title="Modificador aplicado à próxima rolagem">
+                    {modPlus}{modifier}
                 </div>
             </div>
 

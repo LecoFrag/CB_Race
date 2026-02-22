@@ -58,52 +58,54 @@ export default function EventOverlay() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+                    className={`fixed inset-0 z-40 flex ${eventType === 'nitro' ? 'items-end justify-end p-8 bg-transparent pointer-events-none' : 'items-center justify-center bg-black/70 backdrop-blur-sm'}`}
                     onClick={(e) => e.target === e.currentTarget && clearEvent()}
                 >
                     <motion.div
-                        initial={{ scale: 0.7, y: 40, opacity: 0 }}
-                        animate={{ scale: 1, y: 0, opacity: 1 }}
-                        exit={{ scale: 0.7, y: 40, opacity: 0 }}
+                        initial={eventType === 'nitro' ? { x: 400, opacity: 0 } : { scale: 0.7, y: 40, opacity: 0 }}
+                        animate={eventType === 'nitro' ? { x: 0, opacity: 1 } : { scale: 1, y: 0, opacity: 1 }}
+                        exit={eventType === 'nitro' ? { x: 400, opacity: 0 } : { scale: 0.7, y: 40, opacity: 0 }}
                         transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-                        className={`relative border-2 ${config.color} p-0 overflow-hidden ${eventType === 'crash' ? 'w-[800px]' : 'w-[480px]'} max-w-[90vw]`}
+                        className={`relative border-2 ${config.color} p-0 overflow-hidden ${eventType === 'crash' ? 'w-[800px]' : 'w-[480px]'} max-w-[90vw] pointer-events-auto`}
                         style={{ boxShadow: '0 0 60px rgba(220, 38, 38, 0.5)' }}
                     >
                         {/* Event image background / dynamic crash image */}
-                        <div className={`relative overflow-hidden flex items-center justify-center bg-black ${eventType === 'crash' ? 'h-64' : 'h-32'}`}>
-                            {eventType === 'crash' && typeof currentEvent === 'object' && currentEvent.targets ? (
-                                <div className="absolute inset-0 flex items-center justify-center gap-6 bg-red-950/30">
-                                    {currentEvent.targets.map(t => (
-                                        <div key={t.id} className="relative w-40 h-40 border-4 border-red-600 animate-pulse shadow-[0_0_30px_rgba(220,38,38,0.8)]">
-                                            <img src={`./assets/portraits/${t.portrait}`} className="w-full h-full object-cover grayscale opacity-50 sepia-[.5] hue-rotate-[-50deg]" />
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-                                                <Skull className="text-red-500 hover:text-red-400 drop-shadow-[0_0_10px_rgba(220,38,38,1)]" size={80} />
+                        {eventType !== 'nitro' && (
+                            <div className={`relative overflow-hidden flex items-center justify-center bg-black ${eventType === 'crash' ? 'h-64' : 'h-32'}`}>
+                                {eventType === 'crash' && typeof currentEvent === 'object' && currentEvent.targets ? (
+                                    <div className="absolute inset-0 flex items-center justify-center gap-6 bg-red-950/30">
+                                        {currentEvent.targets.map(t => (
+                                            <div key={t.id} className="relative w-40 h-40 border-4 border-red-600 animate-pulse shadow-[0_0_30px_rgba(220,38,38,0.8)]">
+                                                <img src={`./assets/portraits/${t.portrait}`} className="w-full h-full object-cover grayscale opacity-50 sepia-[.5] hue-rotate-[-50deg]" />
+                                                <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+                                                    <Skull className="text-red-500 hover:text-red-400 drop-shadow-[0_0_10px_rgba(220,38,38,1)]" size={80} />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            ) : (
-                                <img
-                                    src={`./assets/scenes/${config.image}`}
-                                    alt={config.title}
-                                    className="w-full h-full object-cover opacity-60"
-                                    onError={(e) => e.target.style.display = 'none'}
-                                />
-                            )}
-                            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/80" />
-                            <div className="absolute bottom-0 left-0 right-0 p-4">
-                                <div className="flex items-center gap-3">
-                                    <config.icon size={eventType === 'crash' ? 48 : 24} className={config.headerColor} />
-                                    <div>
-                                        <div className={`${eventType === 'crash' ? 'text-3xl font-black' : 'text-xl font-bold'} font-display uppercase tracking-widest ${config.headerColor}`}>
-                                            {config.title}
-                                        </div>
-                                        <div className={`${eventType === 'crash' ? 'text-sm' : 'text-[10px]'} text-gray-400 font-mono`}>
-                                            {eventType === 'crash' && typeof currentEvent === 'object'
-                                                ? `${currentEvent.targets.map(t => t.name).join(', ')} foi eliminado.`
-                                                : config.subtitle}
-                                        </div>
+                                        ))}
                                     </div>
+                                ) : (
+                                    <img
+                                        src={`./assets/scenes/${config.image}`}
+                                        alt={config.title}
+                                        className="w-full h-full object-cover opacity-80"
+                                        onError={(e) => e.target.style.display = 'none'}
+                                    />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                            </div>
+                        )}
+
+                        {/* Event Info Header */}
+                        <div className="p-5 bg-black/90 flex items-center gap-4 border-b border-white/5 relative z-10">
+                            <config.icon size={eventType === 'crash' ? 48 : 32} className={config.headerColor} />
+                            <div>
+                                <div className={`${eventType === 'crash' ? 'text-3xl font-black' : 'text-2xl font-bold'} font-display uppercase tracking-widest ${config.headerColor}`}>
+                                    {config.title}
+                                </div>
+                                <div className={`${eventType === 'crash' ? 'text-sm' : 'text-xs'} text-gray-300 font-mono mt-1`}>
+                                    {eventType === 'crash' && typeof currentEvent === 'object'
+                                        ? `${currentEvent.targets.map(t => t.name).join(', ')} foi eliminado.`
+                                        : config.subtitle}
                                 </div>
                             </div>
                         </div>
@@ -180,7 +182,8 @@ export default function EventOverlay() {
                         <div className="absolute inset-0 pointer-events-none bg-scanlines opacity-20" />
                     </motion.div>
                 </motion.div>
-            )}
-        </AnimatePresence>
+            )
+            }
+        </AnimatePresence >
     )
 }

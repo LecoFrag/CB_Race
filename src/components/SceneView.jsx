@@ -330,6 +330,7 @@ export default function SceneView() {
                             {(() => {
                                 const npc = rivals.find(r => r.id === pendingConfrontation.npcId);
                                 if (!npc) return null;
+                                const isError = pendingConfrontation.lastResult && !pendingConfrontation.lastResult.success;
                                 return (
                                     <>
                                         <div className="text-center mb-6 border-b border-red-900 pb-4">
@@ -343,10 +344,10 @@ export default function SceneView() {
 
                                         <div className="flex justify-center items-center gap-8 mb-8 relative">
                                             {/* Player portrait */}
-                                            <div className={`w-32 h-32 border-4 ${recentDamage ? 'border-red-600 bg-red-900' : 'border-blue-600 bg-blue-900/30'} overflow-hidden relative transition-colors`}>
-                                                <img src={recentDamage ? "./assets/portraits/player_angry.png" : "./assets/portraits/player.png"} className="w-full h-full object-cover" />
+                                            <div className={`w-32 h-32 border-4 ${isError ? 'border-red-600 bg-red-900' : 'border-blue-600 bg-blue-900/30'} overflow-hidden relative transition-colors`}>
+                                                <img src={isError ? "./assets/portraits/player_angry.png" : "./assets/portraits/player.png"} className="w-full h-full object-cover" />
                                                 <div className="absolute bottom-0 w-full bg-black/80 text-center font-display text-blue-400 py-1 text-sm">JOGADOR</div>
-                                                {recentDamage && <div className="absolute inset-0 bg-red-600/30 animate-pulse pointer-events-none" />}
+                                                {isError && <div className="absolute inset-0 bg-red-600/30 animate-pulse pointer-events-none" />}
                                             </div>
 
                                             <div className="text-5xl font-display text-red-600 font-bold tracking-widest">VS</div>
