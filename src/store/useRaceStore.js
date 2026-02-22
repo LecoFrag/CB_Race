@@ -1,48 +1,70 @@
 import { create } from 'zustand'
 import raceData from '../data/race.json'
 
-// Function to ensure unique positions 1-8 without ties
-function calculateNewRankings(player, rivals, playerPosChange, rivalPosChanges) {
+// Function to ensure unique positions 1-8 based on points and original position
+function calculateNewRankings(player, rivals, playerPointsGained, rivalPointsGained) {
     const allRacers = [
-        { id: player.id, originalPos: player.position, change: playerPosChange, isPlayer: true, isActive: true },
+        { id: player.id, originalPos: player.position, change: playerPointsGained, isPlayer: true, isActive: true },
         ...rivals.map(r => ({
             id: r.id,
             originalPos: r.position,
-            change: rivalPosChanges[r.id] || 0,
+            change: rivalPointsGained[r.id] || 0,
             isPlayer: false,
             isActive: r.isActive
         }))
     ]
 
-    // Calculate target positional score
     allRacers.forEach(r => {
-        let target = r.originalPos - r.change; // Minus because lower pos = better rank
+        const basePoints = 9 - r.originalPos; // 1st gets 8, 8th gets 1
+        let score = basePoints + r.change;
 
-        // Boosts for overtaking and falling behind
-        if (r.change > 0) target -= 0.5;
-        else if (r.change < 0) target += 0.5;
-
-        // Tie breaker based on original position (whoever was ahead, stays ahead in ties)
-        target += (r.originalPos * 0.01);
-        r.targetPos = target;
+        // Tie breaker based on original position
+        // Higher originalPos value (meaning originally worse rank/behind) means higher tiebreaker score.
+        score += (r.originalPos * 0.01);
+        r.targetScore = score;
     });
 
-    // Sort active racers first. Lower targetPos = better rank
-    const activeRacers = allRacers.filter(r => r.isActive).sort((a, b) => a.targetPos - b.targetPos)
+    // Sort active racers first. Higher targetScore = better rank
+    const activeRacers = allRacers.filter(r => r.isActive).sort((a, b) => b.targetScore - a.targetScore)
 
-    // Assign new sequential 1-based ranks to active racers (closing gaps)
+    // Assign new sequential 1-based ranks
     const newRanks = {}
     activeRacers.forEach((r, index) => {
         newRanks[r.id] = index + 1
     })
 
-    // Inactive racers just keep their last known position or get pushed to the bottom
     const bottomRank = activeRacers.length + 1
     allRacers.filter(r => !r.isActive).forEach(r => {
         newRanks[r.id] = bottomRank
     })
 
     return newRanks
+}
+
+function getPathOutcome(difficulty, roll) {
+    let points = 0;
+    let damage = 0;
+
+    if (difficulty === 'low') {
+        if (roll <= 1) { points = -1; damage = 20; }
+        else if (roll === 2) { points = 0; damage = 10; }
+        else if (roll >= 3 && roll <= 8) { points = 0; damage = 0; }
+        else if (roll >= 9) { points = 1; damage = 0; }
+    } else if (difficulty === 'medium') {
+        if (roll <= 1) { points = -2; damage = 25; }
+        else if (roll >= 2 && roll <= 4) { points = -1; damage = 20; }
+        else if (roll >= 5 && roll <= 7) { points = 0; damage = 0; }
+        else if (roll >= 8 && roll <= 9) { points = 1; damage = 0; }
+        else if (roll >= 10) { points = 2; damage = 0; }
+    } else if (difficulty === 'high') {
+        if (roll <= 1) { points = -3; damage = 30; }
+        else if (roll >= 2 && roll <= 4) { points = -2; damage = 25; }
+        else if (roll >= 5 && roll <= 6) { points = -1; damage = 20; }
+        else if (roll === 7) { points = 1; damage = 0; }
+        else if (roll >= 8 && roll <= 9) { points = 2; damage = 0; }
+        else if (roll >= 10) { points = 3; damage = 0; }
+    }
+    return { points, damage };
 }
 
 const INITIAL_RIVALS = raceData.race.rivals.map((r, i) => ({
@@ -68,7 +90,9 @@ const INITIAL_PLAYER = {
 }
 
 const INITIAL_STATE = {
-    phase: 'choosing', // choosing | inputRoll | revealing | confrontation | finished
+    phase: 'lobby', // lobby | choosing | inputRoll | revealing | confrontation | finished
+    difficulty: 3, // 1 to 5
+    playerBonus: 0, // -3 to +3
     player: INITIAL_PLAYER,
     rivals: INITIAL_RIVALS,
     pendingRoll: null,
@@ -78,11 +102,24 @@ const INITIAL_STATE = {
     currentOutcomeNarrative: null,
     currentEvent: null,
     raceData: raceData.race,
-    pendingConfrontation: null, // { npcId, stage: 'defense'|'attack'|'result', npcPath, actionNarrative: string }
+    pendingConfrontation: null, // { npcId, stage: 'defense'|'attack'|'result', npcPath, actionNarrative: string, lastResult: any }
+    raceLogs: [{ id: Date.now(), text: "Aguardando Configuração Inicial.", type: 'system', segment: 1 }],
 }
 
 export const useRaceStore = create((set, get) => ({
     ...INITIAL_STATE,
+
+    // Define game start from lobby
+    startGame: (playerName, difficultyLevel, pBonus) => {
+        const { player } = get()
+        set({
+            phase: 'choosing',
+            difficulty: difficultyLevel,
+            playerBonus: pBonus,
+            player: { ...player, name: playerName || 'JOGADOR' },
+            raceLogs: [{ id: Date.now(), text: "Corrida Iniciada.", type: 'system', segment: 1 }]
+        })
+    },
 
     // Player selects a path → triggers input phase
     choosePath: (pathId) => {
@@ -99,7 +136,7 @@ export const useRaceStore = create((set, get) => ({
 
     // Jogador insere o valor do dado manual
     submitManualRoll: (value) => {
-        const { pendingPath, player, rivals, raceData } = get()
+        const { pendingPath, player, rivals, raceData, difficulty, playerBonus } = get()
         let finalRoll = parseInt(value, 10)
 
         // Apply any debuff from previous confrontation
@@ -107,22 +144,26 @@ export const useRaceStore = create((set, get) => ({
             finalRoll += player.nextTurnModifier
         }
 
+        // Apply player bonus from lobby (ensuring it's present)
+        finalRoll += playerBonus
+
         // Apply nitro modifier if player used nitro this turn
         const nitroActive = get().nitroThisTurn || false
         const rollWithNitro = nitroActive ? Math.min(10, finalRoll + 3) : finalRoll
 
         const path = pendingPath
-        const totalRoll = rollWithNitro + (path.pathModifier || 0)
+        const totalRoll = Math.max(1, rollWithNitro + (path.pathModifier || 0)) // Prevent raw below 1
 
-        // Determine outcome
-        let outcome
-        if (totalRoll >= path.outcomes.success.minRoll) {
-            outcome = { ...path.outcomes.success, type: 'success' }
-        } else if (totalRoll >= path.outcomes.partial.minRoll) {
-            outcome = { ...path.outcomes.partial, type: 'partial' }
-        } else {
-            outcome = { ...path.outcomes.failure, type: 'failure' }
-        }
+        // Determine narrative outcome
+        let outcomeNarrativeType;
+        if (totalRoll >= path.outcomes.success.minRoll) outcomeNarrativeType = 'success';
+        else if (totalRoll >= path.outcomes.partial.minRoll) outcomeNarrativeType = 'partial';
+        else outcomeNarrativeType = 'failure';
+
+        const outcomeObj = path.outcomes[outcomeNarrativeType];
+        const outcome = { ...outcomeObj, type: outcomeNarrativeType };
+
+        const playerOutcome = getPathOutcome(path.difficulty, totalRoll);
 
         // Simulate rival position updates for THIS segment
         const rivalChanges = {};
@@ -136,26 +177,51 @@ export const useRaceStore = create((set, get) => ({
 
             // Check if player has overridden this NPC (desvantagem)
             const isOverridden = r.statusEffect === 'override';
-            const npcFinalRoll = isOverridden ? Math.max(1, roll - 3) : roll;
 
-            const posChangeNpc = npcFinalRoll >= 7 ? 1 : npcFinalRoll >= 4 ? 0 : -1;
-            rivalChanges[r.id] = posChangeNpc;
+            // Map difficulty (1-5) to (-2, -1, 0, 1, 2)
+            const diffModifier = difficulty - 3;
+
+            let npcFinalRoll = roll + diffModifier;
+            if (isOverridden) npcFinalRoll -= 3;
+
+            npcFinalRoll = Math.max(1, npcFinalRoll); // Prevent falling below critical failure base
 
             // Assign random path
-            npcPaths[r.id] = availablePaths[Math.floor(Math.random() * availablePaths.length)];
+            const npcPathId = availablePaths[Math.floor(Math.random() * availablePaths.length)];
+            npcPaths[r.id] = npcPathId;
+            const npcPathObj = currentSegmentObj.paths ? currentSegmentObj.paths.find(p => p.id === npcPathId) : null;
+            const npcDiff = npcPathObj ? npcPathObj.difficulty : 'medium';
+
+            const npcOutcome = getPathOutcome(npcDiff, npcFinalRoll);
+            rivalChanges[r.id] = npcOutcome.points;
 
             return {
                 ...r,
-                damage: Math.min(100, r.damage + Math.floor(Math.random() * 10)),
+                damage: Math.min(100, r.damage + npcOutcome.damage),
                 statusEffect: isOverridden ? null : r.statusEffect, // clear override
             };
         });
 
         // Calculate unique new positions
-        const posChange = outcome.positionChange || 0;
-        const newRanks = calculateNewRankings(player, rivalsStatsUpdated, posChange, rivalChanges);
+        const newRanks = calculateNewRankings(player, rivalsStatsUpdated, playerOutcome.points, rivalChanges);
 
-        let newDamage = Math.min(100, player.vehicleDamage + (outcome.damageIncrease || 0))
+        const newLogs = [];
+        const allOldRacers = [player, ...rivals];
+        allOldRacers.forEach(r => {
+            const oldPos = r.position;
+            const newPos = newRanks[r.id];
+            if (oldPos && newPos && oldPos !== newPos) {
+                const moved = oldPos > newPos ? 'avançou para' : 'caiu para';
+                newLogs.push({
+                    id: Date.now() + Math.random(),
+                    text: `${r.name} ${moved} ${newPos}º na rolagem de percurso.`,
+                    type: 'position',
+                    segment: player.currentSegment + 1
+                });
+            }
+        });
+
+        let newDamage = Math.min(100, player.vehicleDamage + playerOutcome.damage)
         const newNitro = nitroActive ? player.nitro - 1 : player.nitro
 
         // Check for player elimination
@@ -195,7 +261,8 @@ export const useRaceStore = create((set, get) => ({
                 const chosenNpc = gluedNpcs[Math.floor(Math.random() * gluedNpcs.length)];
                 pendingConfrontation = {
                     npcId: chosenNpc.id,
-                    stage: 'defense',
+                    stage: 'initiative',
+                    playerInitiativeChoice: null,
                     npcPath: path.id,
                     actionNarrative: null
                 };
@@ -220,7 +287,8 @@ export const useRaceStore = create((set, get) => ({
             lastOutcome: { ...outcome, finalRoll: rollWithNitro, path },
             nitroThisTurn: false,
             pendingConfrontation,
-            currentEvent: crashEvent
+            currentEvent: crashEvent,
+            raceLogs: [...newLogs, ...get().raceLogs]
         })
     },
 
@@ -239,58 +307,34 @@ export const useRaceStore = create((set, get) => ({
             return
         }
 
-        // Simulate rival position updates
-        const rivalChanges = {};
-        const rivalsStatsUpdated = get().rivals.map(r => {
-            if (!r.isActive) return r;
-            const roll = Math.ceil(Math.random() * 10);
-
-            const isOverridden = r.statusEffect === 'override';
-            const npcFinalRoll = isOverridden ? Math.max(1, roll - 3) : roll;
-
-            // 1 means gaining position (moves up in rank)
-            const posChange = npcFinalRoll >= 7 ? 1 : npcFinalRoll >= 4 ? 0 : -1;
-            rivalChanges[r.id] = posChange;
-
-            return {
-                ...r,
-                damage: Math.min(100, r.damage + Math.floor(Math.random() * 10)), // Reduced random passive damage slightly to balance
-                statusEffect: isOverridden ? null : r.statusEffect
-            };
-        });
-
-        const newRanks = calculateNewRankings(player, rivalsStatsUpdated, 0, rivalChanges);
-
-        const newlyDestroyed = []
-        const updatedRivals = rivalsStatsUpdated.map(r => {
-            if (!r.isActive) return r;
-            const isDestroyed = r.damage >= 100;
-            if (isDestroyed) newlyDestroyed.push(r)
-            return {
-                ...r,
-                position: newRanks[r.id],
-                isActive: !isDestroyed,
-                damage: isDestroyed ? 100 : r.damage
-            }
-        });
-
-        const crashEvent = newlyDestroyed.length > 0 ? { type: 'crash', targets: newlyDestroyed } : null
+        // Positions are no longer recalculated here. We only move phases!
 
         set({
             phase: 'choosing',
             player: {
                 ...player,
-                position: newRanks[player.id], // ensure player pos is updated during advance without paths
                 currentSegment: nextSegment,
                 chosenPath: null,
                 statusEffect: null, // clears status for new turn
             },
-            rivals: updatedRivals,
             currentNarrative: raceData.segments[nextSegment].description,
             currentOutcomeNarrative: null,
             pendingPath: null,
-            currentEvent: crashEvent,
+            currentEvent: null,
             pendingConfrontation: null
+        })
+    },
+
+    resolveConfrontationInitiative: (choice) => {
+        const { pendingConfrontation } = get()
+        set({
+            pendingConfrontation: {
+                ...pendingConfrontation,
+                playerInitiativeChoice: choice,
+                stage: choice === 'attackFirst' ? 'attack' : 'defense',
+                actionNarrative: null,
+                lastResult: null
+            }
         })
     },
 
@@ -314,7 +358,7 @@ export const useRaceStore = create((set, get) => ({
 
             damageToPlayer = dmg
             if (dmg > 0) nextTurnModifier = -1
-            narrative = `O Abalroamento Brutal de ${npc.name} lhe causou ${dmg}% de dano e ${dmg > 0 ? 'reduziu seu desempenho para o próximo turno' : 'mas você evitou o pior'}.`
+            narrative = `O Abalroamento Brutal de ${npc.name} lhe causou ${dmg}% de dano${dmg > 0 ? ' e reduziu seu desempenho' : ', mas você evitou o pior'}.`
         } else if (npc.style === 'saboteur') { // Vírus de HUD
             if (reactionId === 'firewall') {
                 narrative = `Você evitou a tentativa de hack, mantendo o controle íntegro.`
@@ -324,13 +368,13 @@ export const useRaceStore = create((set, get) => ({
                 narrative = `O Vírus de HUD de ${npc.name} embaralhou seus sistemas, custando estabilidade e pequeno dano no chassi.`
             }
         } else if (npc.style === 'technical') {
-            // NPC Técnico: Traçado Perfeito - Rouba a posição do player se ele estiver na frente, ou passa ele se estiver atrás
-            if (npc.position > player.position) { // NPC is behind (e.g. 4th vs Player 3rd)
-                newPlayerPos = npc.position // Player goes to 4th
+            // NPC Técnico: Traçado Perfeito - Rouba a posição do player se ele estiver na frente
+            if (npc.position > player.position) { // NPC is behind
+                newPlayerPos = npc.position
                 updatedRivals = updatedRivals.map(r => r.id === npc.id ? { ...r, position: player.position } : r)
                 narrative = `${npc.name} utilizou um Traçado Perfeito, encontrando a linha ideal e roubando sua posição!`
             } else {
-                narrative = `${npc.name} utilizou um Traçado Perfeito e disparou na sua frente, consolidando a posição.`
+                narrative = `${npc.name} tentou um Traçado Perfeito, mas você já estava atrás dele e ele não alterou as posições.`
             }
         } else { // unpredictable
             let dmg = 30
@@ -345,6 +389,27 @@ export const useRaceStore = create((set, get) => ({
         let phase = get().phase;
         if (finalDamage >= 100) phase = 'finished';
 
+        const newLogs = [];
+        if (newPlayerPos !== player.position) {
+            const moved = player.position > newPlayerPos ? 'avançou para' : 'caiu para';
+            newLogs.push({
+                id: Date.now() + Math.random(),
+                text: `Jogador ${moved} ${newPlayerPos}º após sofrer ação técnica de ${npc.name}.`,
+                type: 'position',
+                segment: player.currentSegment + 1
+            });
+            const npcMoved = npc.position > player.position ? 'avançou para' : 'caiu para';
+            newLogs.push({
+                id: Date.now() + Math.random(),
+                text: `${npc.name} ${npcMoved} ${player.position}º ao ultrapassar o Jogador.`,
+                type: 'position',
+                segment: player.currentSegment + 1
+            });
+        }
+
+        let nextStage = pendingConfrontation.playerInitiativeChoice === 'defendFirst' ? 'attack' : 'result';
+        if (finalDamage >= 100) nextStage = 'result';
+
         set({
             phase,
             player: {
@@ -357,39 +422,63 @@ export const useRaceStore = create((set, get) => ({
             rivals: updatedRivals,
             pendingConfrontation: {
                 ...pendingConfrontation,
-                stage: 'attack',
-                actionNarrative: narrative
-            }
+                stage: nextStage,
+                actionNarrative: narrative,
+                lastResult: {
+                    success: damageToPlayer === 0 && stabilityToPlayer === 0 && newPlayerPos === player.position,
+                    damage: damageToPlayer
+                }
+            },
+            raceLogs: [...newLogs, ...get().raceLogs]
         })
     },
 
     resolveConfrontationAttack: (skillId) => {
         const { player, rivals, pendingConfrontation } = get()
-        if (skillId === 'skip') {
-            get().advanceSegment()
-            return
-        }
 
         const npc = rivals.find(r => r.id === pendingConfrontation.npcId)
         let newRivals = [...rivals]
 
-        let newPlayer = {
-            ...player,
-            skills: {
+        let newPlayer = { ...player }
+        if (skillId !== 'skip') {
+            newPlayer.skills = {
                 ...player.skills,
                 [skillId]: Math.max(0, player.skills[skillId] - 1)
             }
         }
 
         let narrative = ''
+        const newLogs = [];
+        let skipDefense = false;
 
-        if (skillId === 'harpoon') {
-            // Swap positions
-            const pPos = newPlayer.position
-            newPlayer.position = npc.position
-            newPlayer.stability = Math.max(0, newPlayer.stability - 10)
-            newRivals = newRivals.map(r => r.id === npc.id ? { ...r, position: pPos } : r)
-            narrative = `Você fisgou ${npc.name} com o Arpão Magnético e roubou a posição instantaneamente!`
+        if (skillId === 'skip') {
+            narrative = "Você preferiu guardar seus sistemas ofensivos e não atacou.";
+        } else if (skillId === 'harpoon') {
+            // Swap positions only if NPC is ahead
+            if (npc.position < player.position) {
+                const pPos = newPlayer.position
+                newPlayer.position = npc.position
+                newPlayer.stability = Math.max(0, newPlayer.stability - 10)
+                newRivals = newRivals.map(r => r.id === npc.id ? { ...r, position: pPos } : r)
+                narrative = `Você fisgou ${npc.name} com o Arpão Magnético e roubou a posição instantaneamente!`
+
+                const moved = pPos > npc.position ? 'avançou para' : 'caiu para';
+                newLogs.push({
+                    id: Date.now() + Math.random(),
+                    text: `Jogador ${moved} ${npc.position}º usando o Arpão.`,
+                    type: 'position',
+                    segment: player.currentSegment + 1
+                });
+                const npcMoved = npc.position > pPos ? 'avançou para' : 'caiu para';
+                newLogs.push({
+                    id: Date.now() + Math.random(),
+                    text: `${npc.name} ${npcMoved} ${pPos}º após ser fisgado pelo Jogador.`,
+                    type: 'position',
+                    segment: player.currentSegment + 1
+                });
+            } else {
+                narrative = `O Arpão foi inútil! ${npc.name} já estava atrás de você.`;
+            }
         } else if (skillId === 'override') {
             newRivals = newRivals.map(r => r.id === npc.id ? { ...r, statusEffect: 'override' } : r)
             narrative = `Override ativo nos sistemas de ${npc.name}. O rival terá desvantagem no próximo segmento.`
@@ -398,6 +487,7 @@ export const useRaceStore = create((set, get) => ({
             narrative = `BRUTAL! Sua Descarga de Plasma Lateral torrou o chassi de ${npc.name}.`
         } else if (skillId === 'smoke') {
             narrative = `Você cobriu a pista com a Cortina de Fumaça Densa. O rival perdeu você de vista, abortando qualquer perseguição.`
+            skipDefense = true;
         }
 
         // Processing eliminations if NPC died from Plasma
@@ -411,11 +501,20 @@ export const useRaceStore = create((set, get) => ({
         })
         const crashEvent = newlyDestroyed.length > 0 ? { type: 'crash', targets: newlyDestroyed } : null
 
+        let nextStage = pendingConfrontation.playerInitiativeChoice === 'attackFirst' ? 'defense' : 'result';
+        if (skipDefense || newlyDestroyed.length > 0) nextStage = 'result';
+
         set({
             player: newPlayer,
             rivals: newRivals,
-            pendingConfrontation: { ...pendingConfrontation, stage: 'result', actionNarrative: narrative },
-            currentEvent: crashEvent
+            pendingConfrontation: {
+                ...pendingConfrontation,
+                stage: nextStage,
+                actionNarrative: narrative,
+                lastResult: { success: skillId !== 'skip' && narrative.indexOf('inútil') === -1 }
+            },
+            currentEvent: crashEvent,
+            raceLogs: [...newLogs, ...get().raceLogs]
         })
     },
 

@@ -60,12 +60,24 @@ export default function SceneView() {
     const {
         phase, player, raceData, pendingPath, currentNarrative,
         currentOutcomeNarrative, lastOutcome, choosePath, advanceSegment, submitManualRoll,
-        pendingConfrontation, triggerConfrontation, resolveConfrontationDefense, resolveConfrontationAttack, rivals
+        pendingConfrontation, triggerConfrontation, resolveConfrontationDefense, resolveConfrontationAttack, resolveConfrontationInitiative, rivals
     } = useRaceStore()
 
     const [showDice, setShowDice] = useState(false)
     const [bgLoaded, setBgLoaded] = useState(false)
     const [currentBg, setCurrentBg] = useState(null)
+    const [recentDamage, setRecentDamage] = useState(false)
+    const [prevDamage, setPrevDamage] = useState(player.vehicleDamage)
+
+    useEffect(() => {
+        if (player.vehicleDamage > prevDamage) {
+            setRecentDamage(true)
+            const t = setTimeout(() => setRecentDamage(false), 1500)
+            setPrevDamage(player.vehicleDamage)
+            return () => clearTimeout(t)
+        }
+        if (player.vehicleDamage < prevDamage) setPrevDamage(player.vehicleDamage) // If healed or reset
+    }, [player.vehicleDamage, prevDamage])
 
     const segment = raceData?.segments?.[player.currentSegment]
 
@@ -320,7 +332,7 @@ export default function SceneView() {
                                 if (!npc) return null;
                                 return (
                                     <>
-                                        <div className="text-center mb-8 border-b border-red-900 pb-4">
+                                        <div className="text-center mb-6 border-b border-red-900 pb-4">
                                             <div className="text-red-500 text-sm font-mono uppercase tracking-widest mb-2 flex items-center justify-center gap-2">
                                                 <ShieldAlert size={16} /> FASE DE CONFRONTO
                                             </div>
@@ -329,11 +341,66 @@ export default function SceneView() {
                                             </h2>
                                         </div>
 
-                                        {pendingConfrontation.stage === 'defense' && (
+                                        <div className="flex justify-center items-center gap-8 mb-8 relative">
+                                            {/* Player portrait */}
+                                            <div className={`w-32 h-32 border-4 ${recentDamage ? 'border-red-600 bg-red-900' : 'border-blue-600 bg-blue-900/30'} overflow-hidden relative transition-colors`}>
+                                                <img src={recentDamage ? "./assets/portraits/player_angry.png" : "./assets/portraits/player.png"} className="w-full h-full object-cover" />
+                                                <div className="absolute bottom-0 w-full bg-black/80 text-center font-display text-blue-400 py-1 text-sm">JOGADOR</div>
+                                                {recentDamage && <div className="absolute inset-0 bg-red-600/30 animate-pulse pointer-events-none" />}
+                                            </div>
+
+                                            <div className="text-5xl font-display text-red-600 font-bold tracking-widest">VS</div>
+
+                                            {/* NPC portrait */}
+                                            <div className="w-32 h-32 border-4 border-red-600 bg-red-900/30 overflow-hidden relative">
+                                                <img src={`./assets/portraits/${npc.portrait}`} className="w-full h-full object-cover" />
+                                                <div className="absolute bottom-0 w-full bg-black/80 text-center font-display text-red-400 py-1 text-sm">{npc.name}</div>
+                                            </div>
+                                        </div>
+
+                                        {pendingConfrontation.stage === 'initiative' && (
                                             <div className="flex flex-col gap-6">
                                                 <div className="bg-red-950/40 border-l-4 border-orange-500 p-4">
+                                                    <p className="text-orange-200 font-mono text-lg text-center">
+                                                        <strong className="text-orange-400">ENCONTRO IMINENTE!</strong> O que você faz?
+                                                    </p>
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4 mt-4">
+                                                    <button
+                                                        onClick={() => resolveConfrontationInitiative('attackFirst')}
+                                                        className="bg-black border border-orange-500 text-orange-400 p-4 hover:bg-orange-900/40 transition-colors uppercase font-display font-bold flex flex-col items-center group"
+                                                    >
+                                                        <span>AGIR PRIMEIRO</span>
+                                                        <span className="text-[10px] font-mono mt-2 opacity-50 group-hover:opacity-100 text-center">Atacar antes do inimigo agir.</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => resolveConfrontationInitiative('defendFirst')}
+                                                        className="bg-black border border-blue-500 text-blue-400 p-4 hover:bg-blue-900/40 transition-colors uppercase font-display font-bold flex flex-col items-center group"
+                                                    >
+                                                        <span>ESPERAR REAÇÃO</span>
+                                                        <span className="text-[10px] font-mono mt-2 opacity-50 group-hover:opacity-100 text-center">Permitir que o rival aja primeiro.</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {pendingConfrontation.stage === 'defense' && (
+                                            <div className="flex flex-col gap-6">
+                                                {pendingConfrontation.lastResult && (
+                                                    <>
+                                                        <div className={`text-center font-display font-bold text-4xl uppercase tracking-widest ${pendingConfrontation.lastResult.success ? 'text-green-500' : 'text-red-500'}`}>
+                                                            {pendingConfrontation.lastResult.success ? 'BEM-SUCEDIDO' : 'FALHA - INEFICAZ'}
+                                                        </div>
+                                                        <div className={`border-l-4 p-4 mb-2 ${pendingConfrontation.lastResult?.success ? 'bg-green-950/20 border-green-500' : 'bg-red-950/20 border-red-500'}`}>
+                                                            <p className={`${pendingConfrontation.lastResult?.success ? 'text-green-300' : 'text-red-300'} font-mono`}>
+                                                                {pendingConfrontation.actionNarrative}
+                                                            </p>
+                                                        </div>
+                                                    </>
+                                                )}
+                                                <div className="bg-red-950/40 border-l-4 border-orange-500 p-4">
                                                     <p className="text-orange-200 font-mono text-lg">
-                                                        <strong className="text-orange-400">ATAQUE IMINENTE:</strong> O rival posicionou o veículo agressivamente! O que você faz?
+                                                        <strong className="text-orange-400">AÇÃO INIMIGA:</strong> O rival partiu para a ofensiva! O que você faz?
                                                     </p>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-4 mt-4">
@@ -367,13 +434,18 @@ export default function SceneView() {
 
                                         {pendingConfrontation.stage === 'attack' && (
                                             <div className="flex flex-col gap-6">
-                                                <div className="bg-green-950/20 border-l-4 border-green-500 p-4 mb-4">
-                                                    <p className="text-green-300 font-mono">
+                                                {pendingConfrontation.lastResult && (
+                                                    <div className={`text-center font-display font-bold text-4xl uppercase tracking-widest ${pendingConfrontation.lastResult.success ? 'text-green-500' : 'text-red-500'}`}>
+                                                        {pendingConfrontation.lastResult.success ? 'BEM-SUCEDIDO' : 'FALHA - DANO APREENDIDO'}
+                                                    </div>
+                                                )}
+                                                <div className={`border-l-4 p-4 mb-2 ${pendingConfrontation.lastResult?.success ? 'bg-green-950/20 border-green-500' : 'bg-red-950/20 border-red-500'}`}>
+                                                    <p className={`${pendingConfrontation.lastResult?.success ? 'text-green-300' : 'text-red-300'} font-mono`}>
                                                         {pendingConfrontation.actionNarrative}
                                                     </p>
                                                 </div>
 
-                                                <div className="text-center text-sm font-mono text-red-500 uppercase tracking-widest mb-2">Sua Janela de Oportunidade</div>
+                                                <div className="text-center text-sm font-mono text-red-500 uppercase tracking-widest mb-1">Sua Janela de Oportunidade</div>
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <button
                                                         title="Fisga o rival e rouba sua posição instantaneamente. Ganha +10 de instabilidade."
@@ -446,18 +518,44 @@ export default function SceneView() {
                 )}
 
                 {/* Finished screen */}
-                {phase === 'finished' && (
+                {phase === 'finished' && player.vehicleDamage < 100 && (
                     <motion.div
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className="flex flex-col items-center gap-8 my-8 bg-black/80 p-12 border-2 border-orange-500"
+                        className="absolute inset-0 z-30 flex flex-col justify-center items-center bg-black/90 p-12 overflow-hidden"
                     >
-                        <div className="text-7xl font-display font-bold text-orange-400 uppercase tracking-widest animate-flicker">
-                            🏁 CORRIDA ENCERRADA
-                        </div>
-                        <div className="text-3xl font-display text-red-300">
-                            Posição Final: <span className="text-orange-400 text-7xl ml-4">{player.position}º</span>
-                        </div>
+                        {player.position === 1 ? (
+                            <>
+                                <motion.img
+                                    initial={{ y: 50, opacity: 0 }}
+                                    animate={{ y: 0, opacity: 1 }}
+                                    transition={{ duration: 0.8, type: 'spring' }}
+                                    src="./assets/portraits/player_victory.png"
+                                    className="h-[60vh] object-contain drop-shadow-[0_0_50px_rgba(250,204,21,0.6)] z-10"
+                                />
+                                <div className="text-8xl mt-8 font-display font-bold text-yellow-500 uppercase tracking-widest animate-flicker z-20">
+                                    VITÓRIA!
+                                </div>
+                                <div className="text-4xl mt-4 font-display text-yellow-300 z-20 tracking-widest text-center">
+                                    1º COLOCADO DA NOVA VITÓRIA RACE
+                                </div>
+                            </>
+                        ) : (
+                            <div className="flex flex-col items-center gap-8 border-2 border-orange-500 p-12 bg-black/60">
+                                <div className="text-7xl font-display font-bold text-orange-400 uppercase tracking-widest animate-flicker">
+                                    🏁 CORRIDA ENCERRADA
+                                </div>
+                                <div className="text-3xl font-display text-red-300">
+                                    Posição Final: <span className="text-orange-400 text-7xl ml-4">{player.position}º</span>
+                                </div>
+                            </div>
+                        )}
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-12 bg-black border border-orange-500 text-orange-400 px-8 py-4 font-display font-bold text-xl uppercase tracking-widest hover:bg-orange-900/50 hover:text-white transition-all z-20"
+                        >
+                            JOGAR NOVAMENTE
+                        </button>
                     </motion.div>
                 )}
             </div>

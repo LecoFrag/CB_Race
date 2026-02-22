@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import { useRaceStore } from './store/useRaceStore'
 import { motion, AnimatePresence } from 'framer-motion'
 import MiniMap from './components/MiniMap'
@@ -5,19 +6,33 @@ import SceneView from './components/SceneView'
 import RivalPanel from './components/RivalPanel'
 import PlayerStatus from './components/PlayerStatus'
 import EventOverlay from './components/EventOverlay'
+import RaceLog from './components/RaceLog'
+import LobbyView from './components/LobbyView'
+import { Volume2, VolumeX } from 'lucide-react'
 
 function NitroFlash() {
     const { currentEvent } = useRaceStore()
     return (
         <AnimatePresence>
             {currentEvent === 'nitro' && (
-                <motion.div
-                    className="fixed inset-0 z-30 pointer-events-none bg-orange-400"
-                    initial={{ opacity: 0.8 }}
-                    animate={{ opacity: 0 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.5 }}
-                />
+                <>
+                    <motion.div
+                        className="fixed inset-0 z-30 pointer-events-none bg-orange-400"
+                        initial={{ opacity: 0.8 }}
+                        animate={{ opacity: 0 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.5 }}
+                    />
+                    <motion.div
+                        className="fixed inset-y-0 right-0 z-40 pointer-events-none flex items-center justify-end overflow-hidden"
+                        initial={{ x: '100%', opacity: 0, scale: 1.1 }}
+                        animate={{ x: '0%', opacity: 1, scale: 1 }}
+                        exit={{ x: '100%', opacity: 0 }}
+                        transition={{ type: 'spring', damping: 20, stiffness: 100 }}
+                    >
+                        <img src="./assets/portraits/player_focus.png" className="h-[40vh] object-cover max-w-none border-l-4 border-orange-500 shadow-[-20px_0_50px_rgba(249,115,22,0.5)]" />
+                    </motion.div>
+                </>
             )}
         </AnimatePresence>
     )
@@ -25,6 +40,23 @@ function NitroFlash() {
 
 export default function App() {
     const { phase } = useRaceStore()
+    const [isMuted, setIsMuted] = useState(false)
+    const audioRef = useRef(null)
+
+    useEffect(() => {
+        if (audioRef.current) {
+            audioRef.current.volume = 0.3;
+            // Attempt autoplay
+            audioRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+        }
+    }, [])
+
+    const toggleMute = () => {
+        if (audioRef.current) {
+            audioRef.current.muted = !isMuted;
+            setIsMuted(!isMuted);
+        }
+    }
 
     return (
         <div className="w-screen h-screen bg-cyber-dark overflow-hidden flex flex-col relative">
@@ -44,37 +76,45 @@ export default function App() {
                 </div>
                 <div className="flex items-center gap-4">
                     <span className="text-sm text-red-700 font-mono uppercase tracking-widest">SISTEMA INTERATIVO v1.1</span>
+                    <button onClick={toggleMute} className="text-red-700 hover:text-red-400 transition-colors focus:outline-none" title="Mutar/Desmutar Música">
+                        {isMuted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+                    </button>
                     <div className="w-3 h-3 bg-red-600 rounded-full dot-blink" />
                 </div>
-            </div>
+            </div >
 
             {/* Main layout: 3 columns */}
-            <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '22% 1fr 25%' }}>
+            < div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: '22% 1fr 25%' }
+            }>
 
                 {/* Left: MiniMap */}
-                <div className="border-r border-red-950 overflow-hidden">
+                < div className="border-r border-red-950 overflow-hidden" >
                     <MiniMap />
-                </div>
+                </div >
 
-                {/* Center: SceneView */}
-                <div className="overflow-hidden relative">
-                    <SceneView />
-                </div>
+                {/* Center: SceneView or LobbyView */}
+                < div className="overflow-hidden relative" >
+                    {phase === 'lobby' ? <LobbyView /> : <SceneView />}
+                </div >
 
                 {/* Right: RivalPanel */}
-                <div className="border-l border-red-950 overflow-hidden">
+                < div className="border-l border-red-950 overflow-hidden" >
                     <RivalPanel />
-                </div>
-            </div>
+                </div >
+            </div >
 
             {/* Bottom: Player Status */}
-            <div className="flex-shrink-0 h-24 border-t-2 border-red-900">
+            < div className="flex-shrink-0 h-24 border-t-2 border-red-900" >
                 <PlayerStatus />
-            </div>
+            </div >
 
             {/* Overlays */}
-            <EventOverlay />
+            < EventOverlay />
             <NitroFlash />
+            <RaceLog />
+
+            {/* Background Audio */}
+            <audio ref={audioRef} src="./neon_race.mp3" loop />
 
             {/* Global scanlines overlay */}
             <div
@@ -87,6 +127,6 @@ export default function App() {
             {/* Corner decorations */}
             <div className="fixed top-8 left-0 w-3 h-16 bg-gradient-to-r from-red-900/40 to-transparent pointer-events-none z-10" />
             <div className="fixed top-8 right-0 w-3 h-16 bg-gradient-to-l from-red-900/40 to-transparent pointer-events-none z-10" />
-        </div>
+        </div >
     )
 }

@@ -12,16 +12,21 @@ function StatusBadge({ effect }) {
     )
 }
 
-function SkillIcon({ active, icon: Icon, label, color, description }) {
+function SkillIcon({ count, icon: Icon, label, color, description }) {
+    const active = count > 0;
     return (
         <div
-            className={`w-12 h-12 border flex items-center justify-center transition-all ${active
-                    ? 'border-red-600 bg-red-950/40 ' + color
-                    : 'border-red-950 bg-black/40 text-red-950 opacity-40'
+            className={`w-12 h-12 border flex items-center justify-center transition-all relative ${active
+                ? 'border-red-600 bg-red-950/40 ' + color
+                : 'border-red-950 bg-black/40 text-red-950 opacity-40'
                 }`}
-            title={`${label}${active ? ' (Disponível)' : ' (Usado)'}\n${description}`}
+            title={`${label}${active ? ' (Disponível)' : ' (Esgotado)'}\n${description}`}
         >
             <Icon size={24} />
+            <div className={`absolute -bottom-2 -right-2 text-[10px] font-mono px-1 rounded-sm border ${active ? 'bg-black text-white border-gray-600' : 'bg-black/50 text-gray-600 border-gray-800'
+                }`}>
+                {count}x
+            </div>
         </div >
     )
 }
@@ -111,10 +116,10 @@ export default function PlayerStatus() {
             <div className="flex flex-col justify-center gap-2 ml-4 border-l border-red-900 pl-4">
                 <div className="text-sm text-red-700 uppercase tracking-widest text-center">SISTEMAS OFENSIVOS</div>
                 <div className="flex gap-2">
-                    <SkillIcon active={player.skills?.harpoon} icon={Magnet} label="Arpão Magnético" description="Fisga o rival e rouba sua posição instantaneamente. Ganha +10 de instabilidade." color="text-blue-400" />
-                    <SkillIcon active={player.skills?.override} icon={Cpu} label="Override" description="Aplica um vírus no rival. Ele terá -3 no próximo rolamento de segmento." color="text-purple-400" />
-                    <SkillIcon active={player.skills?.plasma} icon={Flame} label="Plasma Lateral" description="Dispara uma onda de calor pura. Causa 40% de dano extremo." color="text-orange-500" />
-                    <SkillIcon active={player.skills?.smoke} icon={CloudFog} label="Cortina de Fumaça" description="Impede que rivais o sigam de perto com eficácia neste confronto." color="text-gray-400" />
+                    <SkillIcon count={player.skills?.harpoon || 0} icon={Magnet} label="Arpão Magnético" description="Fisga o rival e rouba sua posição instantaneamente. Ganha +10 de instabilidade." color="text-blue-400" />
+                    <SkillIcon count={player.skills?.override || 0} icon={Cpu} label="Override" description="Aplica um vírus no rival. Ele terá -3 no próximo rolamento de segmento." color="text-purple-400" />
+                    <SkillIcon count={player.skills?.plasma || 0} icon={Flame} label="Plasma Lateral" description="Dispara uma onda de calor pura. Causa 40% de dano extremo." color="text-orange-500" />
+                    <SkillIcon count={player.skills?.smoke || 0} icon={CloudFog} label="Cortina de Fumaça" description="Impede que rivais o sigam de perto com eficácia neste confronto." color="text-gray-400" />
                 </div>
             </div>
 
