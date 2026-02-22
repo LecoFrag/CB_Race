@@ -166,12 +166,16 @@ export default function SceneView() {
                                 <motion.div
                                     initial={{ opacity: 0, height: 0 }}
                                     animate={{ opacity: 1, height: 'auto' }}
-                                    className="mt-6 pt-6 border-t-2 border-red-900"
+                                    className="mt-6 pt-6 border-t-2 border-red-500"
                                 >
                                     <div className={`text-sm uppercase tracking-widest mb-2 font-display font-bold
-                    ${lastOutcome?.type === 'success' ? 'text-green-400' : lastOutcome?.type === 'partial' ? 'text-yellow-400' : 'text-red-400'}
+                    ${lastOutcome?.type === 'critical_success' ? 'text-yellow-400' :
+                                            lastOutcome?.type === 'success' ? 'text-green-400' :
+                                                lastOutcome?.type === 'failure' ? 'text-orange-400' : 'text-red-500'}
                   `}>
-                                        {lastOutcome?.type === 'success' ? '▸ SUCESSO' : lastOutcome?.type === 'partial' ? '▸ PARCIAL' : '▸ FALHA'}
+                                        {lastOutcome?.type === 'critical_success' ? '▸ SUCESSO CRÍTICO' :
+                                            lastOutcome?.type === 'success' ? '▸ SUCESSO' :
+                                                lastOutcome?.type === 'failure' ? '▸ FALHA' : '▸ FALHA CRÍTICA'}
                                         {lastOutcome?.finalRoll && ` — Dado: ${lastOutcome.finalRoll}`}
                                     </div>
                                     <p className="text-lg text-orange-100 font-mono leading-relaxed">

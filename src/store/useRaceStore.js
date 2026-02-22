@@ -46,27 +46,29 @@ function calculateNewRankings(player, rivals, playerPointsGained, rivalPointsGai
 function getPathOutcome(difficulty, roll) {
     let points = 0;
     let damage = 0;
+    let type = 'failure';
+    let statusEffect = null;
 
     if (difficulty === 'low') {
-        if (roll <= 1) { points = -1; damage = 20; }
-        else if (roll === 2) { points = 0; damage = 10; }
-        else if (roll >= 3 && roll <= 8) { points = 0; damage = 0; }
-        else if (roll >= 9) { points = 1; damage = 0; }
+        if (roll <= 1) { points = -1; damage = 20; type = 'critical_failure'; statusEffect = 'overheating'; }
+        else if (roll === 2) { points = 0; damage = 10; type = 'failure'; }
+        else if (roll >= 3 && roll <= 8) { points = 0; damage = 0; type = 'success'; }
+        else if (roll >= 9) { points = 1; damage = 0; type = 'critical_success'; }
     } else if (difficulty === 'medium') {
-        if (roll <= 1) { points = -2; damage = 25; }
-        else if (roll >= 2 && roll <= 4) { points = -1; damage = 20; }
-        else if (roll >= 5 && roll <= 7) { points = 0; damage = 0; }
-        else if (roll >= 8 && roll <= 9) { points = 1; damage = 0; }
-        else if (roll >= 10) { points = 2; damage = 0; }
+        if (roll <= 1) { points = -2; damage = 25; type = 'critical_failure'; statusEffect = 'locked'; }
+        else if (roll >= 2 && roll <= 4) { points = -1; damage = 20; type = 'failure'; }
+        else if (roll >= 5 && roll <= 7) { points = 0; damage = 0; type = 'success'; }
+        else if (roll >= 8 && roll <= 9) { points = 1; damage = 0; type = 'success'; }
+        else if (roll >= 10) { points = 2; damage = 0; type = 'critical_success'; }
     } else if (difficulty === 'high') {
-        if (roll <= 1) { points = -3; damage = 30; }
-        else if (roll >= 2 && roll <= 4) { points = -2; damage = 25; }
-        else if (roll >= 5 && roll <= 6) { points = -1; damage = 20; }
-        else if (roll === 7) { points = 1; damage = 0; }
-        else if (roll >= 8 && roll <= 9) { points = 2; damage = 0; }
-        else if (roll >= 10) { points = 3; damage = 0; }
+        if (roll <= 1) { points = -3; damage = 30; type = 'critical_failure'; statusEffect = 'locked'; }
+        else if (roll >= 2 && roll <= 4) { points = -2; damage = 25; type = 'failure'; }
+        else if (roll >= 5 && roll <= 6) { points = -1; damage = 20; type = 'failure'; }
+        else if (roll === 7) { points = 1; damage = 0; type = 'success'; }
+        else if (roll >= 8 && roll <= 9) { points = 2; damage = 0; type = 'success'; }
+        else if (roll >= 10) { points = 3; damage = 0; type = 'critical_success'; }
     }
-    return { points, damage };
+    return { points, damage, type, statusEffect };
 }
 
 const INITIAL_RIVALS = raceData.race.rivals.map((r, i) => ({
@@ -156,16 +158,9 @@ export const useRaceStore = create((set, get) => ({
         const path = pendingPath
         const totalRoll = Math.max(1, rollWithNitro) // Prevent raw below 1
 
-        // Determine narrative outcome
-        let outcomeNarrativeType;
-        if (totalRoll >= path.outcomes.success.minRoll) outcomeNarrativeType = 'success';
-        else if (totalRoll >= path.outcomes.partial.minRoll) outcomeNarrativeType = 'partial';
-        else outcomeNarrativeType = 'failure';
-
-        const outcomeObj = path.outcomes[outcomeNarrativeType];
-        const outcome = { ...outcomeObj, type: outcomeNarrativeType };
-
         const playerOutcome = getPathOutcome(path.difficulty, totalRoll);
+        const outcomeNarrativeType = playerOutcome.type;
+        const outcomeObj = path.outcomes[outcomeNarrativeType];
 
         // Simulate rival position updates for THIS segment
         const rivalChanges = {};
@@ -261,10 +256,37 @@ export const useRaceStore = create((set, get) => ({
         const newlyDestroyed = updatedRivals.filter(r => !r.isActive && rivals.find(old => old.id === r.id)?.isActive)
         const crashEvent = newlyDestroyed.length > 0 ? { type: 'crash', targets: newlyDestroyed } : null
 
-        // Check for confrontation (only if player is still alive)
         const playerNewPos = newRanks[player.id];
-        let pendingConfrontation = null;
+        const prevPlayerPos = player.position;
+        const posChange = prevPlayerPos - playerNewPos; // > 0 means gained, < 0 means lost
 
+        let customNarrative = outcomeObj?.narrative || 'Aconteceu algo não mapeado no destino.';
+
+        // Find rivals passed or that passed the player
+        const rivalsPassedUs = updatedRivals.filter(r => r.position < playerNewPos && r.position >= prevPlayerPos).map(r => r.name);
+        const rivalsWePassed = updatedRivals.filter(r => r.position > playerNewPos && r.position <= prevPlayerPos).map(r => r.name);
+
+        // Process conditional text: _{Se rivais passaram: TEXTO}_
+        customNarrative = customNarrative.replace(/_\{Se rivais passaram:(.*?)\}_/g, (match, p1) => {
+            if (posChange < 0 && rivalsPassedUs.length > 0) {
+                return p1.trim().replace('{rivais_que_passaram}', rivalsPassedUs.join(', '))
+                    .replace('{n_posicoes_perdidas}', Math.abs(posChange).toString());
+            }
+            return '';
+        });
+
+        // Process conditional text: _{Se ultrapassou alguém: TEXTO}_
+        customNarrative = customNarrative.replace(/_\{Se ultrapassou alguém:(.*?)\}_/g, (match, p1) => {
+            if (posChange > 0 && rivalsWePassed.length > 0) {
+                return p1.trim().replace('{rivais_ultrapassados}', rivalsWePassed.join(', '))
+                    .replace('{n_posicoes_ganhas}', posChange.toString());
+            }
+            return '';
+        });
+
+        const outcome = { ...outcomeObj, type: outcomeNarrativeType, damageIncrease: playerOutcome.damage, statusEffect: playerOutcome.statusEffect };
+
+        let pendingConfrontation = null;
         if (racePhase !== 'finished') {
             const gluedNpcs = updatedRivals.filter(r =>
                 r.isActive &&
@@ -293,13 +315,13 @@ export const useRaceStore = create((set, get) => ({
                 nitro: newNitro,
                 chosenPath: path.id,
                 statusEffect: outcome.statusEffect || null,
-                stability: Math.max(0, player.stability - (outcome.damageIncrease ? outcome.damageIncrease * 0.5 : 0)),
+                stability: Math.max(0, player.stability - (playerOutcome.damage * 0.5)),
                 nextTurnModifier: 0, // clears after use
             },
             rivals: updatedRivals,
             currentNarrative: path.narrative,
-            currentOutcomeNarrative: outcome.narrative,
-            lastOutcome: { ...outcome, finalRoll: rollWithNitro, path },
+            currentOutcomeNarrative: customNarrative,
+            lastOutcome: { ...outcome, finalRoll: rollWithNitro, path, rawNarrative: customNarrative },
             nitroThisTurn: false,
             pendingConfrontation,
             currentEvent: crashEvent,

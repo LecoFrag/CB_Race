@@ -75,28 +75,19 @@
                         "pathModifier": 0,
                         "image": "seg1_pathA.png",
                         "icon": "Road",
-                        "narrative": "Você pressiona o acelerador junto com sete outros motores rugindo. O corredor industrial se abre à frente como uma boca de concreto. Rivais flanqueiam você de todos os lados — Ferro Bruto já está colado no seu para-choque. O caminho é rápido, mas vai exigir que você abra espaço na marra.",
+                        "narrative": "Você pressiona o acelerador junto com sete outros motores rugindo. O corredor industrial se abre à frente como uma boca de concreto. Rivais flanqueiam você de todos os lados. O caminho é rápido, mas vai exigir que você abra espaço na marra.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 6,
-                                "positionChange": 1,
-                                "damageIncrease": 0,
-                                "narrative": "Você encontra um bolsão de ar entre dois rivais e acelera por ele como uma bala. A multidão nas sacadas das fábricas explode em gritos. Você sai do corredor em vantagem.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 10,
-                                "narrative": "Ferro Bruto te empurra por dois segundos que parecem dois anos. Seu para-choque geme, mas você sustenta. Sem ganho, sem perda de posição — só cicatrizes novas na lataria.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "A pressão dos dois lados ao mesmo tempo é demais. Seu veículo é espremido, amassado, cuspido para o lado. O corredor cospe você em pedaços de lataria e posição. _{Se rivais passaram: Enquanto você recupera o controle, {rivais_que_passaram} abrem vantagem que vai doer por muito tempo.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 25,
-                                "narrative": "A pressão dos lados é demais. Um rival te bate pela direita e outro pela esquerda em sequência. Você sai do corredor na última posição, com fumaça saindo do motor.",
-                                "statusEffect": "overheating"
+                                "narrative": "Você sustenta, mas com custo. O contato lateral foi duro demais e seu ritmo cai por alguns segundos decisivos. _{Se rivais passaram: Tempo suficiente para {rivais_que_passaram} deslizarem pela abertura que você deixou.}_"
+                            },
+                            "success": {
+                                "narrative": "Você encontra um bolsão de ar entre dois rivais e joga o veículo por ele sem hesitar. A multidão nas sacadas das fábricas explode em gritos. Você sai do corredor com a lataria intacta e o ritmo no lugar certo."
+                            },
+                            "critical_success": {
+                                "narrative": "Puro instinto. Você lê o corredor como um código e escolhe a linha exata antes que os rivais sequer percebam o que você fez. _{Se ultrapassou alguém: {rivais_ultrapassados} ficam para trás sem entender o que aconteceu.}_ A multidão vai falar disso depois da corrida."
                             }
                         }
                     },
@@ -108,28 +99,19 @@
                         "pathModifier": 1,
                         "image": "seg1_pathB.png",
                         "icon": "Warehouse",
-                        "narrative": "Uma abertura no muro de concreto — entrada do galpão velho da Petrochem. Piso quebrado, vigas caídas, escuridão quase total. Nenhum rival se atreve. Se você conseguir atravessar esse inferno, vai emergir bem à frente.",
+                        "narrative": "Uma abertura no muro de concreto — entrada do galpão velho. Piso quebrado, vigas caídas, escuridão quase total. Nenhum rival se atreve. Se você conseguir atravessar esse inferno, vai emergir bem à frente.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 7,
-                                "positionChange": 2,
-                                "damageIncrease": 5,
-                                "narrative": "Você dança entre as vigas caídas como se tivesse ensaiado. O galpão cospe você do outro lado já em 2º lugar. Os rivais que foram pelo corredor não acreditam no que veem.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 4,
-                                "positionChange": 1,
-                                "damageIncrease": 20,
-                                "narrative": "Você atravessa, mas o piso cede duas vezes sob suas rodas. Você sai sacudido, com a suspensão gemendo, mas à frente de metade do pelotão.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Uma viga cai no momento errado, no lugar errado. O impacto te joga contra a parede de tijolos com um barulho que ecoa no galpão inteiro. Você sai chacoalhando, desorientado, bem atrás de onde entrou. _{Se rivais passaram: {rivais_que_passaram} já estão longe quando você finalmente vê a luz do outro lado.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -2,
-                                "damageIncrease": 40,
-                                "narrative": "Uma viga cai bem no seu caminho. Você desvia tarde demais. O impacto te joga contra a parede de tijolos. Quando você reaparece do outro lado do galpão, está chacoalhando e em último lugar.",
-                                "statusEffect": "locked"
+                                "narrative": "Você atravessa, mas o piso trai você duas vezes. A suspensão absorve o que pode. Você sai mais lento do que precisava — e perdeu a vantagem que esse atalho deveria dar."
+                            },
+                            "success": {
+                                "narrative": "Você dança entre as vigas com atenção e precisão. O galpão cospe você do outro lado antes dos rivais que foram pelo corredor principal. Silêncio, depois velocidade."
+                            },
+                            "critical_success": {
+                                "narrative": "Isso não tem explicação racional. Você atravessou aquela escuridão como se tivesse memorizado cada centímetro do lugar. _{Se ultrapassou alguém: Você emerge {n_posicoes_ganhas} posições acima do que entrou — {rivais_ultrapassados} nem entenderam de onde você veio.}_ Vai ser difícil repetir algo assim."
                             }
                         }
                     },
@@ -141,28 +123,19 @@
                         "pathModifier": -1,
                         "image": "seg1_pathC.png",
                         "icon": "Waves",
-                        "narrative": "A marginal fede a esgoto e produto químico, mas está vazia de rivais. O caminho é mais longo, mas você vai sozinho. O canal reflte as luzes de neon da cidade enquanto você corta pelo asfalto úmido.",
+                        "narrative": "A marginal fede a esgoto e produto químico, mas está vazia de rivais. O caminho é mais longo, mas você vai sozinho. O canal reflete as luzes de neon da cidade enquanto você corta pelo asfalto úmido.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 0,
-                                "narrative": "Você navega pela marginal sem incidentes. Seguro, limpo, sem contato. Você re-entra na rota principal na mesma posição que saiu — mas sem uma arranhão.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 2,
-                                "positionChange": -1,
-                                "damageIncrease": 5,
-                                "narrative": "O piso molhado te pregou uma peça. Um deslizamento leve te custou tempo. Você retorna ao pelotão um lugar atrás.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "O canal transbordou. Há lama no asfalto e você só descobre quando as rodas perdem qualquer contato com a realidade. Você bate numa barreira de metal enferrujada com um estrondo que assusta até os ratos. _{Se rivais passaram: {rivais_que_passaram} escolheram melhor — e o placar mostra.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 15,
-                                "narrative": "O canal transbordou — há lama no asfalto. Você patina e bate numa barreira de metal enferrujada. A lataria do lado direito vai precisar de atenção.",
-                                "statusEffect": null
+                                "narrative": "O piso molhado te pregou uma peça no momento mais inconveniente. Um deslizamento curto, mas suficiente. Você retorna ao pelotão com o ânimo abalado e a posição piorada."
+                            },
+                            "success": {
+                                "narrative": "Você navega pela marginal sem incidentes. Seguro, limpo, sem contato. O neon se reflete na água enquanto você corre sozinho. Você re-entra na rota principal exatamente onde saiu."
+                            },
+                            "critical_success": {
+                                "narrative": "A marginal estava no seu dia. Asfalto úmido, tração perfeita, zero rival. Você cruza o trecho mais rápido do que qualquer rota deveria permitir. _{Se ultrapassou alguém: {rivais_ultrapassados} escolheram o caminho mais badalado — você escolheu o caminho certo.}_"
                             }
                         }
                     }
@@ -182,28 +155,19 @@
                         "pathModifier": 0,
                         "image": "seg2_pathA.png",
                         "icon": "ArrowUp",
-                        "narrative": "A rampa principal do viaduto. Exposição total — você vê cada rival, e cada rival vê você. A multidão abaixo parece formiguinhas. Aqui se decide quem tem coragem de apertar mais.",
+                        "narrative": "A rampa principal do viaduto. Exposição total — você vê cada rival, e cada rival vê você. A multidão lá embaixo parece formiguinhas. Aqui se decide quem tem coragem de apertar mais.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 6,
-                                "positionChange": 1,
-                                "damageIncrease": 0,
-                                "narrative": "Você abre o acelerador na subida e passa dois rivais que hesitaram. Lá no topo do viaduto, você está melhor posicionado do que antes.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 5,
-                                "narrative": "Sílvia Chrome tenta te fechar na chegada ao topo. Você sustenta, mas o atrito entre as carrocerias deixa marcas. Posição mantida.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Você freou tarde na descida. O veículo patina, você perde a linha, e a janela que os rivais precisavam se abre na sua frente como uma porta de convidado. _{Se rivais passaram: {rivais_que_passaram} passam enquanto você ainda está tentando encontrar o controle.}_ A cidade lá embaixo não tem piedade."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 20,
-                                "narrative": "Na descida do viaduto, você freou tarde. Dois rivais passam por cima enquanto você recupera o controle. A cidade lá embaixo parecia estar rindo de você.",
-                                "statusEffect": null
+                                "narrative": "A subida foi bem. A descida, não. Você saiu da curva fechado demais e perdeu o ritmo que tinha construído. Sem acidente, mas sem avanço."
+                            },
+                            "success": {
+                                "narrative": "Você abre o acelerador na subida e pressiona onde os rivais hesitaram. No topo do viaduto, sua posição está melhor do que quando você chegou na rampa."
+                            },
+                            "critical_success": {
+                                "narrative": "Você usou a inclinação do viaduto como catapulta. Acelerou quando todo mundo freou, freou quando todo mundo esperava que você acelerasse. Leitura cirúrgica da pista. _{Se ultrapassou alguém: {rivais_ultrapassados} ficam para trás na rampa — e você nem olha no espelho.}_"
                             }
                         }
                     },
@@ -215,28 +179,19 @@
                         "pathModifier": 1,
                         "image": "seg2_pathB.png",
                         "icon": "EyeOff",
-                        "narrative": "Embaixo do viaduto, pelo corredor de serviço. Pilares de concreto, grafite antigo, quase nenhuma visibilidade. Mas se você conhece o traçado, pode emergir antes dos rivais que foram pelo topo.",
+                        "narrative": "Embaixo do viaduto, pelo corredor de serviço. Pilares de concreto, grafite antigo, quase nenhuma visibilidade. Mas quem conhece o traçado pode emergir antes dos rivais que foram pelo topo.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 6,
-                                "positionChange": 2,
-                                "damageIncrease": 0,
-                                "narrative": "Você memoriza os pilares e passa entre eles como água. Você emerge na saída do viaduto antes de qualquer rival que tomou o topo. Ghost.exe te observa de longe com um aceno de respeito.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 15,
-                                "narrative": "Um pilar te pega de raspão na escuridão. Você sai ileso mas o espelho retrovisor ficou lá, preso no concreto. Posição neutra.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Você não viu o pilar parcialmente destruído até ser tarde demais. O impacto ecoa como um trovão lá embaixo. Você sai mancando de velocidade e de posição. _{Se rivais passaram: {rivais_que_passaram} aparecem na saída do viaduto bem antes de você.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 35,
-                                "narrative": "Você não viu o pilar partialmente destruído. O impacto ecoa como um trovão embaixo do viaduto. Você sai mancando de lá, em pior posição.",
-                                "statusEffect": "overheating"
+                                "narrative": "Um pilar te pegou de raspão na escuridão. Espelho retrovisor ficou para trás, preso no concreto. Você sai ileso mas lento — a vantagem do atalho evaporou."
+                            },
+                            "success": {
+                                "narrative": "Você decora os pilares e passa entre eles como se tivesse feito isso cem vezes. Você emerge na saída do viaduto à frente de quem foi pelo topo. Silencioso, eficiente."
+                            },
+                            "critical_success": {
+                                "narrative": "Perfeito no escuro. Você navegou aquele corredor como se tivesse sensores no lugar de olhos. _{Se ultrapassou alguém: Você reaparece na pista {n_posicoes_ganhas} posição(ões) acima — {rivais_ultrapassados} nem perceberam por onde você passou.}_ Isso é o que separa piloto de lenda."
                             }
                         }
                     },
@@ -250,26 +205,17 @@
                         "icon": "Store",
                         "narrative": "A rua lateral passa por uma feira livre — barracas de comida, fios de luz cruzando de janela em janela, cheiro de churrasco e óleo. Mais longa, mas cheia de personagem. E de gente no meio do caminho.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 0,
-                                "narrative": "Você buzina e as pessoas se jogam para os lados. Um vendedor de churrasquinho te joga uma espetada de graça enquanto você passa. Você retorna à rota sem perder posição.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 2,
-                                "positionChange": -1,
-                                "damageIncrease": 5,
-                                "narrative": "Uma barraca de frutas entra no seu caminho. Laranjas em todos os lugares. Você perde tempo — e um lugar.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "O trânsito de pedestres era mais denso do que parecia. Você fica preso por segundos agoniantes — buzinando, focinhando, sem saída. _{Se rivais passaram: {rivais_que_passaram} já estão longe quando o corredor finalmente se abre.}_ Tudo isso por causa de uma feira de bairro."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 10,
-                                "narrative": "O trânsito de pedestres era mais denso do que parecia. Você fica preso por segundos agoniantes, focino, buzinando. Dois rivais passam na rua principal enquanto você espera.",
-                                "statusEffect": null
+                                "narrative": "Uma barraca de frutas entrou no seu caminho. Laranjas em todos os lugares. Você perde ritmo — e posição. A culpa é de ninguém e é de todo mundo."
+                            },
+                            "success": {
+                                "narrative": "Você buzina e as pessoas se jogam para os lados com uma sincronia quase cômica. Um vendedor te joga uma espetada de graça enquanto você passa. Você retorna à rota principal sem perder posição."
+                            },
+                            "critical_success": {
+                                "narrative": "Você transformou uma rua de feira em pista de corrida e ninguém se machucou. Os moradores da lateral vão contar essa história por semanas. _{Se ultrapassou alguém: {rivais_ultrapassados} escolheram o viaduto — você escolheu o bairro. Seu placar, sua escolha.}_"
                             }
                         }
                     }
@@ -289,28 +235,19 @@
                         "pathModifier": 1,
                         "image": "seg3_pathA.png",
                         "icon": "ShoppingBag",
-                        "narrative": "Você corta direto pelo meio do Camelódromo. Barracas passam como relâmpagos. Pedestres gritam. Vendedores ambulantes se jogam pro lado. É caótico, é perigoso — e é o caminho mais curto.",
+                        "narrative": "Você corta direto pelo meio do Camelódromo. Barracas passam como relâmpagos. Pedestres gritam. Vendedores se jogam pro lado. É caótico, é perigoso — e é o caminho mais curto.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 7,
-                                "positionChange": 2,
-                                "damageIncrease": 10,
-                                "narrative": "Você navega pelo caos como um deus. A multidão para de gritar xingamentos e começa a gritar seu nome. Você emerge do Camelódromo dois lugares à frente, com uma história para contar.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 4,
-                                "positionChange": 0,
-                                "damageIncrease": 20,
-                                "narrative": "Uma barraca de eletrônicos piratas te pega de lado. Você atropela uma caixa de HDDs falsificados — talvez o único crime nessa corrida que a NCPD realmente processaria. Posição neutra, lataria sofreu.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Uma multidão fecha o corredor antes que você possa frear. Você para, recua, tenta outra rota. Quando finalmente sai da feira, a corrida seguiu sem você. _{Se rivais passaram: {rivais_que_passaram} já estão longe — eles escolheram melhor ou tiveram mais sorte. Hoje, tanto faz.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -2,
-                                "damageIncrease": 35,
-                                "narrative": "Uma multidão fecha o corredor antes que você possa frear. Você para, recua, tenta outra rota. Quando você finalmente sai da feira, metade do pelotão já passou.",
-                                "statusEffect": "locked"
+                                "narrative": "Uma barraca de eletrônicos piratas te pega de lado. Você passa por cima de uma caixa de mercadoria falsificada com um estrondo indigno. A lataria sofreu. A posição, também."
+                            },
+                            "success": {
+                                "narrative": "Você navega pelo caos com atenção cirúrgica. A multidão para de gritar xingamentos e começa a gritar seu nome. Você emerge do Camelódromo mais à frente do que entrou."
+                            },
+                            "critical_success": {
+                                "narrative": "Impossível de explicar. Você foi pelo meio da feira a velocidade absurda e saiu do outro lado sem arranhar uma barraca sequer. _{Se ultrapassou alguém: {rivais_ultrapassados} ficam para trás — você ganhou {n_posicoes_ganhas} posição(ões) no meio do caos mais denso da cidade.}_ A Vitória vai falar disso."
                             }
                         }
                     },
@@ -322,28 +259,19 @@
                         "pathModifier": 0,
                         "image": "seg3_pathB.png",
                         "icon": "Eye",
-                        "narrative": "Aberta, iluminada por hologramas de propaganda e o reflexo do oceano poluído. É a rota mais limpa — mas há uma viatura da NCPD estacionada lá no final, e eles parece que viram você.",
+                        "narrative": "Aberta, iluminada por hologramas de propaganda e o reflexo do oceano poluído. É a rota mais limpa — mas há uma viatura estacionada lá no final, e eles parecem que viram você.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 5,
-                                "positionChange": 1,
-                                "damageIncrease": 0,
-                                "narrative": "A NCPD começa a ligar a sirene, mas você já passou. Sobre a velocidade deles tentarem te perseguir: boa sorte. Você é uma mancha laranja no horizonte.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 0,
-                                "narrative": "A NCPD cruza na sua frente por dois segundos que envelhecem sua alma. Você desvia e segue. Posição mantida, mas sua frequência cardíaca vai levar uma hora para normalizar.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "A viatura sai do estacionamento e bloqueia sua linha com precisão irritante. Você faz uma sequência de manobras desesperadas que custam tempo e lataria. _{Se rivais passaram: {rivais_que_passaram} passam enquanto você está dançando com a lei.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 10,
-                                "narrative": "A viatura NCPD sai do estacionamento e bloqueia sua linha. Você tem que fazer uma sequência de manobras desesperadas que custam tempo e lataria.",
-                                "statusEffect": null
+                                "narrative": "A viatura cruza na sua frente por dois segundos que envelhecem sua alma. Você desvia e segue, mas a interrupção foi suficiente para custar posição."
+                            },
+                            "success": {
+                                "narrative": "A sirene começa a ligar, mas você já passou. Você é uma mancha no horizonte quando eles ainda estão tentando ligar o motor. Beira-mar limpa, posição mantida."
+                            },
+                            "critical_success": {
+                                "narrative": "Você passou tão rápido que a viatura nem chegou a registrar a placa. O reflexo do neon no oceano fica no seu retrovisor como uma pintura. _{Se ultrapassou alguém: {rivais_ultrapassados} escolheram rotas mais lentas — você escolheu a reta vazia. Placar certo.}_"
                             }
                         }
                     },
@@ -357,26 +285,17 @@
                         "icon": "Lock",
                         "narrative": "Terreno privado do ShopVitória. Segurança armada, câmeras de IA, piso polido. Mas as rampas internas cortam caminho. Se você entrar rápido e sair mais rápido, funciona.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 5,
-                                "positionChange": 1,
-                                "damageIncrease": 0,
-                                "narrative": "Você usa as rampas de estacionamento como se fossem uma pista de kart particular. Os seguranças ficam gritando no rádio. Você sai sorrindo pelo lado oposto.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 10,
-                                "narrative": "Um seguranças lança um bloqueio de grade metálica no seu caminho. Você passa por cima. A suspensão absorve, mas doi. Posição neutra.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "O sistema de IA do shopping fecha as cancelas automáticas em sequência antes que você consiga reagir. Você bate numa delas com um barulho que faz todo cliente do térreo olhar para cima. _{Se rivais passaram: {rivais_que_passaram} estão do lado de fora rindo — ou pelo menos é assim que parece.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 20,
-                                "narrative": "O sistema de IA do shopping fecha as cancelas automáticas em sequência. Você bate numa delas. Quando finalmente sai, está atrás.",
-                                "statusEffect": null
+                                "narrative": "Um segurança lança um bloqueio de grade metálica no seu caminho. Você passa por cima. A suspensão absorve, mas doi. Você sai atrás de onde deveria."
+                            },
+                            "success": {
+                                "narrative": "Você usa as rampas de estacionamento como se fossem uma pista particular. Os seguranças ficam gritando no rádio enquanto você some pelo lado oposto, rindo."
+                            },
+                            "critical_success": {
+                                "narrative": "Você entrou, subiu, desceu e saiu antes que o sistema de câmeras conseguisse travar qualquer porta. _{Se ultrapassou alguém: {rivais_ultrapassados} estavam na Beira-Mar ou na feira — você estava três andares acima deles.}_ Eficiente e invisível."
                             }
                         }
                     }
@@ -396,28 +315,19 @@
                         "pathModifier": 1,
                         "image": "seg4_pathA.png",
                         "icon": "Skull",
-                        "narrative": "A viela principal do Morro é controlada pelos Diabos Vermelhos. Eles cobram pedágio. Você pode pagar, pode negociar — ou pode tentar passar na força. Em qualquer caso, eles vão se lembrar do seu rosto.",
+                        "narrative": "A viela principal do Morro é controlada. Eles cobram pedágio. Você pode pagar, pode negociar — ou pode tentar passar na força. Em qualquer caso, eles vão se lembrar do seu rosto.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 6,
-                                "positionChange": 2,
-                                "damageIncrease": 5,
-                                "narrative": "Você passa tão rápido que os Diabos Vermelhos nem conseguem reagir. Um deles arremessa uma garrafa que bate na sua lataria — mas você está três quarteirões à frente antes do vidro terminar de cair.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 20,
-                                "narrative": "Você para, joga um envelope de eddies pela janela e acelera. A gang deixa passar — por agora. Você perdeu tempo, mas não posição.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "A viela fecha com um carro velho atravessado no caminho. Você tenta o meio-fio e acaba engaletado entre muro e ferragem. _{Se rivais passaram: {rivais_que_passaram} já sumiram morro acima quando você finalmente escapa.}_ Custou posição, lataria e orgulho."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 40,
-                                "narrative": "Os Diabos Vermelhos bloqueiam a viela com um carro velho. Você tenta passar por cima do meio-fio — e acaba engaletado. Quando você finalmente escapa, está sangrando euros e posição.",
-                                "statusEffect": "overheating"
+                                "narrative": "Você para, negocia no grito, e paga um preço que dói mais do que deveria. Tempo perdido, posição perdida. A gang aceita o pagamento sem agradecer."
+                            },
+                            "success": {
+                                "narrative": "Você passa tão rápido que ninguém tem tempo de reagir direito. Uma garrafa bate na sua lataria — mas você já está três quarteirões à frente quando o vidro termina de cair."
+                            },
+                            "critical_success": {
+                                "narrative": "Velocidade e leitura perfeita do ambiente. Você entrou, leu quem estava onde, escolheu a linha e saiu antes que a viela soubesse que você estava lá. _{Se ultrapassou alguém: {rivais_ultrapassados} estão mais abaixo no morro — você já está na saída.}_ Respeito conquistado na prática."
                             }
                         }
                     },
@@ -429,28 +339,19 @@
                         "pathModifier": 2,
                         "image": "seg4_pathB.png",
                         "icon": "Home",
-                        "narrative": "Existe uma rota — quase lenda — pelos telhados de laje das casas do Morro. Estreita, sem grade, com queda de dez metros de qualquer lado. Se o veículo aguentar, você voa sobre a gang inteira.",
+                        "narrative": "Existe uma rota — quase lenda — pelos telhados de laje das casas do Morro. Estreita, sem grade, com queda de dez metros de qualquer lado. Se o veículo aguentar, você voa sobre tudo.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 8,
-                                "positionChange": 3,
-                                "damageIncrease": 10,
-                                "narrative": "Um momento de insanidade pura. Você atravessa três quarteirões de telhado a 80 km/h. Crianças do Morro gritam e filmam. Você vai ser lenda aqui até o fim da campanha.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 5,
-                                "positionChange": 1,
-                                "damageIncrease": 30,
-                                "narrative": "Você passa metade do percurso pelos telhados antes de uma laje ceder. Você cai meio metro e aterra num beco — longe do engarrafamento, mas com a suspensão chorando.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "O telhado cede no primeiro metro. Você desce três metros e cai num quintal cheio de varais. Você sai de lá de marcha ré, enrolado em roupa de cama, sem dignidade e sem posição. _{Se rivais passaram: {rivais_que_passaram} nem sabem o que você tentou — e talvez seja melhor assim.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -2,
-                                "damageIncrease": 50,
-                                "narrative": "O telhado cede no primeiro metro. Você desce três metros e cai num quintal cheio de varais. Você sai de lá de marcha ré, enrolado em roupa de cama, no final do pelotão.",
-                                "statusEffect": "locked"
+                                "narrative": "Você passa metade do percurso pelos telhados antes de uma laje ceder. Você cai meio metro e aterra num beco. Suspensão chorando, posição piorada."
+                            },
+                            "success": {
+                                "narrative": "Um momento de insanidade pura. Você atravessa quarteirões de telhado a velocidade proibida. Crianças do Morro gritam e filmam. Você vai ser lenda aqui."
+                            },
+                            "critical_success": {
+                                "narrative": "Três quarteirões de laje. Sem pausa, sem hesitação, sem queda. _{Se ultrapassou alguém: Você aterra na saída do morro {n_posicoes_ganhas} posição(ões) acima — {rivais_ultrapassados} ainda estão nas vielas lá embaixo.}_ Crianças do Morro gritam e filmam. Você vai ser lenda aqui."
                             }
                         }
                     },
@@ -464,26 +365,17 @@
                         "icon": "TreePine",
                         "narrative": "O sopé do morro tem uma estrada de terra esquecida pelos mapas. Nenhuma gang, nenhum rival. Só poeira, mato e silêncio. É o caminho mais longo, mas ninguém vai te incomodar.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 0,
-                                "narrative": "Você sai da estrada de terra na saída do Morro praticamente intocado. Poeira na lataria, nada mais. Posição mantida.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 2,
-                                "positionChange": -1,
-                                "damageIncrease": 5,
-                                "narrative": "A estrada é mais comprida do que parecia no mapa. Você perde posição por tempo, não por dano.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "A terra molhada engole as rodas. Você fica preso por minutos angustiantes até conseguir sair. O Morro inteiro parece estar rindo. _{Se rivais passaram: {rivais_que_passaram} já terminaram o segmento enquanto você ainda estava discutindo com a lama.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 15,
-                                "narrative": "A terra molhada engole as rodas. Você fica preso por dois minutos angustiantes até conseguir sair. O Morro inteiro parece estar rindo.",
-                                "statusEffect": null
+                                "narrative": "A estrada é mais comprida do que parecia no mapa — e mais traiçoeira. Você perde posição por tempo, não por dano. Ninguém te tocou, mas o relógio te cobrou."
+                            },
+                            "success": {
+                                "narrative": "Você sai da estrada de terra na saída do Morro praticamente intocado. Poeira na lataria, nada mais. Posição mantida — que às vezes é o suficiente."
+                            },
+                            "critical_success": {
+                                "narrative": "Caminho mais longo, mas você voou. A estrada esquecida tratou seu veículo melhor do que qualquer pista asfaltada. _{Se ultrapassou alguém: {rivais_ultrapassados} escolheram as vielas — você escolheu o silêncio. Escolha certa.}_"
                             }
                         }
                     }
@@ -503,28 +395,19 @@
                         "pathModifier": 1,
                         "image": "seg5_pathA.png",
                         "icon": "Box",
-                        "narrative": "Contêineres empilhados formam corredores de metal enferrujado. Aqui os rivais sabotadores adoram operar — é fácil fechar um corredor. Mas quem conhece o traçado pode encurtar muito o caminho.",
+                        "narrative": "Contêineres empilhados formam corredores de metal enferrujado. Aqui é fácil fechar um corredor, fácil se perder. Mas quem conhece o traçado pode encurtar muito o caminho.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 6,
-                                "positionChange": 2,
-                                "damageIncrease": 5,
-                                "narrative": "Você memoriza os números dos contêineres como um código. O labirinto se abre para você. Você emerge pelo outro lado antes que qualquer rival tenha processado qual bifurcação tomar.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 20,
-                                "narrative": "A Sombra te esperava numa dobra. Você escapa do bloqueio, mas arranha o lado inteiro do seu veículo em sequência de contêineres. Som horrível, dano real.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Você entra no corredor errado. Um beco sem saída. Você tem que dar marcha ré por duzentos metros enquanto rivals passam pela rota correta. Humilhante e silencioso. _{Se rivais passaram: {rivais_que_passaram} já estão do outro lado do porto.}_"
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -2,
-                                "damageIncrease": 35,
-                                "narrative": "Você entra no labirinto errado. Um beco sem saída. Você tem que dar marcha ré por 200 metros enquanto rivals passam pela rota correta. Humilhante.",
-                                "statusEffect": "locked"
+                                "narrative": "Um bloqueio te esperava numa dobra. Você escapa, mas arranha o lado inteiro do veículo numa sequência de contêineres. Som horrível, dano real, posição perdida."
+                            },
+                            "success": {
+                                "narrative": "Você memoriza os corredores como um código. O labirinto se abre para você. Você emerge pelo outro lado antes que qualquer rival tenha processado qual bifurcação tomar."
+                            },
+                            "critical_success": {
+                                "narrative": "Você leu o labirinto de metal como se fosse um mapa na sua cabeça. Zero hesitação, zero erro. _{Se ultrapassou alguém: {rivais_ultrapassados} ainda estão girando em círculo quando você já saiu pela outra ponta.}_ O Porto Novo foi seu hoje."
                             }
                         }
                     },
@@ -536,28 +419,19 @@
                         "pathModifier": 0,
                         "image": "seg5_pathB.png",
                         "icon": "Droplets",
-                        "narrative": "A doca é linha reta — mas o piso está encharcado de óleo e água salgada. O reflexo do neon na água seria bonito, se você não soubesse que derrapar aqui significaria um banho forçado no porto.",
+                        "narrative": "Linha reta — mas o piso está encharcado de óleo e água salgada. O reflexo do neon na água seria bonito, se você não soubesse que derrapar aqui significaria um banho forçado no porto.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 5,
-                                "positionChange": 1,
-                                "damageIncrease": 0,
-                                "narrative": "Você mantém as rodas controladas no piso escorregadio e chega ao fim da doca sem derrapar. A linha reta te dá vantagem sobre quem escolheu o labirinto.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 10,
-                                "narrative": "Meio derrapagem, meio controle. Você patina por três metros antes de recuperar. Ninguém cai no porto hoje. Posição neutra.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "O óleo no piso não perdoa. Você derrapa completamente e bate numa defensiva de aço com um estrondo que o porto inteiro ouve. _{Se rivais passaram: {rivais_que_passaram} passam rindo — ou pelo menos parece que estão.}_ O porto não tem piedade."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 25,
-                                "narrative": "O óleo no piso não perdoa. Você derrapa completamente e bate numa defensiva de aço. O porto inteiro ressoa com o barulho. Um rival ri enquanto passa.",
-                                "statusEffect": null
+                                "narrative": "Meio derrapagem, meio descontrole. Você patina por três metros antes de recuperar. Ninguém cai na água hoje, mas a posição foi embora."
+                            },
+                            "success": {
+                                "narrative": "Você mantém as rodas sob controle no piso escorregadio e chega ao fim da doca sem drama. A linha reta te dá vantagem sobre quem escolheu o labirinto."
+                            },
+                            "critical_success": {
+                                "narrative": "Você domou a doca oleosa como se tivesse rodado nela a vida inteira. Velocidade máxima, controle total. _{Se ultrapassou alguém: {rivais_ultrapassados} escolheram o labirinto — você escolheu a reta. Escolha mais rápida.}_"
                             }
                         }
                     },
@@ -569,28 +443,19 @@
                         "pathModifier": -1,
                         "image": "seg5_pathC.png",
                         "icon": "Snowflake",
-                        "narrative": "O armazém frigorífico do Porto — quase zero grau, névoa branca, piso soluçando de gelo. Nenhum rival quer saber de entrar aqui. Você vai sozinho, mas o frio deixa o motor instável.",
+                        "narrative": "O armazém frigorífico do Porto — quase zero grau, névoa branca, piso em gelo seco. Nenhum rival quer entrar aqui. Você vai sozinho, mas o frio deixa o motor instável.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 0,
-                                "narrative": "O frio é intenso mas o caminho é limpo. Você sai do outro lado do armazém sem um rival perto. A névoa fica no seu rastro como fumaça de cinematográfica.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 2,
-                                "positionChange": -1,
-                                "damageIncrease": 10,
-                                "narrative": "O motor treme no frio extremo e perde potência por uns segundos decisivos. Você sai atrás.",
-                                "statusEffect": "overheating"
+                            "critical_failure": {
+                                "narrative": "O motor congela parcialmente. Você fica parado por tempo demais tentando dar partida no frio que parece pessoal. _{Se rivais passaram: Quando o motor finalmente responde, {rivais_que_passaram} já terminaram o segmento.}_ O frio não liga para a sua pressa."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 20,
-                                "narrative": "O motor congela parcialmente. Você fica parado por 30 segundos tentando dar partida novamente no frio. Quando consegue, o pelotão passou.",
-                                "statusEffect": "overheating"
+                                "narrative": "O motor treme no frio extremo e perde potência em segundos decisivos. Você sai do armazém mais devagar do que entrou — e mais atrás."
+                            },
+                            "success": {
+                                "narrative": "O frio é intenso mas o caminho é limpo. Você sai do outro lado do armazém sem um rival perto. A névoa fica no seu rastro como efeito cinematográfico involuntário."
+                            },
+                            "critical_success": {
+                                "narrative": "O motor não reclamou, o piso não traiu, o frio não intimidou. Você atravessou o armazém como se tivesse turbina no lugar de câmbio. _{Se ultrapassou alguém: {rivais_ultrapassados} evitaram o frigorífico — e pagaram o preço por isso.}_"
                             }
                         }
                     }
@@ -610,28 +475,19 @@
                         "pathModifier": 0,
                         "image": "seg6_pathA.png",
                         "icon": "Zap",
-                        "narrative": "A reta aberta. Todos os rivais visíveis. Sabotagem máxima — Ghost.exe está em posição. Ferro Bruto está flertando com a sua traseira. Mas é aqui, na reta, onde motores decidem quem vence.",
+                        "narrative": "A reta aberta. Todos os rivais visíveis. Nenhum lugar para esconder. É aqui, na reta, onde motores decidem quem vence.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 6,
-                                "positionChange": 2,
-                                "damageIncrease": 0,
-                                "narrative": "Você abre o acelerador e não fecha mais. O motor responde como se soubesse que é a última chance. A multidão explode. A linha de chegada se aproxima em velocidade insana. VOCÊ VENCE.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 3,
-                                "positionChange": 0,
-                                "damageIncrease": 15,
-                                "narrative": "Ferro Bruto te acompanha até os últimos 200 metros. Você briga com ele na reta, amassando metal contra metal. No fim, posição neutra — mas que corrida.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Alguma coisa falhou quando não podia falhar. Seu veículo treme, perde resposta, hesita por segundos que parecem décadas. _{Se rivais passaram: {rivais_que_passaram} passam por você como se você estivesse parado — porque você estava quase parado.}_ Dois segundos são uma eternidade na Reta Final."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -1,
-                                "damageIncrease": 30,
-                                "narrative": "Ghost.exe aciona o jack remoto nos últimos metros. Seu veículo treme, perde aceleração por dois segundos. Dois segundos são uma eternidade na Reta Final.",
-                                "statusEffect": "locked"
+                                "narrative": "Você não conseguiu abrir o acelerador no momento certo. A janela fechou e você ficou preso atrás de quem deveria ter ficado atrás de você. _{Se rivais passaram: {rivais_que_passaram} aproveitaram sua hesitação.}_"
+                            },
+                            "success": {
+                                "narrative": "Você abre o acelerador e não fecha mais. O motor responde como se soubesse que é a última chance. Você termina o segmento melhor posicionado do que entrou."
+                            },
+                            "critical_success": {
+                                "narrative": "Você encontrou algo a mais na reta — um segundo dentro de si mesmo que os rivais não têm. _{Se ultrapassou alguém: {rivais_ultrapassados} não tiveram resposta — você passou {n_posicoes_ganhas} veículo(s) em linha reta pura.}_ É aqui que corridas são decididas."
                             }
                         }
                     },
@@ -643,28 +499,19 @@
                         "pathModifier": 2,
                         "image": "seg6_pathB.png",
                         "icon": "PersonStanding",
-                        "narrative": "Ilegal, perigoso, glorioso. A calçada da Av. Independência está cheia de pedestres saindo do trabalho noturno, mas é mais larga que parece. Se você tiver coragem — e habilidade — vai ultrapassar todos pela direita.",
+                        "narrative": "Ilegal, perigoso, glorioso. A calçada da Av. Independência está cheia de pedestres, mas é mais larga que parece. Se você tiver coragem — e habilidade — vai ultrapassar todos pela direita.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 7,
-                                "positionChange": 3,
-                                "damageIncrease": 5,
-                                "narrative": "Impossível. Você foi pela calçada a 120 km/h e não acertou UM SÓ pedestre. As pessoas se jogam pro lado como numa coreografia. Você cruza a linha chegada em PRIMEIRO. A multidão enlouquece.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 4,
-                                "positionChange": 1,
-                                "damageIncrease": 20,
-                                "narrative": "Você consegue passar alguns rivais pela calçada, mas bate num poste de propaganda holográfica. O veículo sai balançando, mas você ainda avança.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "Alguém surgiu do nada no momento pior possível. Você freia, quase capota, perde o ritmo e a posição de uma vez. _{Se rivais passaram: {rivais_que_passaram} passam pela esquerda enquanto você ainda está tentando não matar ninguém.}_ Vai ter muito o que explicar depois."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -2,
-                                "damageIncrease": 45,
-                                "narrative": "A mulher com carrinho de bebê surgiu do nada. Você freia, quase capota, perde dois lugares e ainda vai ter que explicar para a NCPD depois da corrida.",
-                                "statusEffect": "locked"
+                                "narrative": "Você consegue a calçada, mas bate num poste de propaganda holográfica que não estava no ângulo certo. O veículo sai balançando. Posição perdida, orgulho arranhado."
+                            },
+                            "success": {
+                                "narrative": "Você foi pela calçada e as pessoas se jogaram para os lados como numa coreografia ensaiada. Você avança na corrida e ainda sai do segmento ileso."
+                            },
+                            "critical_success": {
+                                "narrative": "Isso não tem lógica. Você foi pela calçada a velocidade que não se menciona em público e não tocou em ninguém. _{Se ultrapassou alguém: {rivais_ultrapassados} ficam para trás na pista principal enquanto você passa por fora com precisão absurda.}_ A Vitória vai guardar esse replay."
                             }
                         }
                     },
@@ -676,28 +523,19 @@
                         "pathModifier": 2,
                         "image": "seg6_pathC.png",
                         "icon": "Moon",
-                        "narrative": "Existe um túnel submerso sob a Av. Independência — construído na era pré-guerra, ativo mas esquecido. Completamente escuro. Apenas os faróis do seu veículo. Ninguém sabe o que tem lá dentro. Tudo ou nada.",
+                        "narrative": "Existe um túnel submerso sob a Av. Independência — construído numa era anterior, ativo mas esquecido. Completamente escuro. Apenas os faróis do seu veículo. Ninguém sabe o que tem lá dentro. Tudo ou nada.",
                         "outcomes": {
-                            "success": {
-                                "minRoll": 7,
-                                "positionChange": 3,
-                                "damageIncrease": 0,
-                                "narrative": "O túnel é uma linha reta perfeita. Sem obstáculos, sem rivais, sem limite de velocidade moral. Você sai do outro lado em PRIMEIRO antes que qualquer rival chegue à linha de chegada.",
-                                "statusEffect": null
-                            },
-                            "partial": {
-                                "minRoll": 4,
-                                "positionChange": 1,
-                                "damageIncrease": 15,
-                                "narrative": "O túnel não era completamente vazio — havia restos de equipamentos velhos. Você bate em dois deles no escuro, mas ainda emerge à frente de metade do pelotão.",
-                                "statusEffect": null
+                            "critical_failure": {
+                                "narrative": "O túnel estava inundado. Não completamente — só o suficiente para apagar o motor. Você sai do outro lado escorregando pelo asfalto encharcado, em silêncio forçado. _{Se rivais passaram: {rivais_que_passaram} cruzam a linha de chegada enquanto você ainda está enxugando o assoalho.}_ Tudo ou nada — e hoje foi nada."
                             },
                             "failure": {
-                                "minRoll": 1,
-                                "positionChange": -2,
-                                "damageIncrease": 60,
-                                "narrative": "O túnel estava inundado. Não completamente, mas o suficiente para que seu motor apagasse. Você sai do outro lado mais tarde que todos, escorregando pelo asfalto encharcado em ÚLTIMO. A corrida acabou assim.",
-                                "statusEffect": "locked"
+                                "narrative": "O túnel não era completamente vazio. Você bate em equipamentos velhos no escuro, sem ver nada antes do impacto. Você emerge do outro lado, mas mais atrás do que deveria."
+                            },
+                            "success": {
+                                "narrative": "O túnel é uma linha reta perfeita. Sem obstáculos, sem rivais, sem limite. Você sai do outro lado antes de quem foi pela reta aberta. O escuro foi seu aliado."
+                            },
+                            "critical_success": {
+                                "narrative": "O escuro do túnel foi o melhor asfalto da corrida. Sem rival, sem interferência, sem limitação. Velocidade pura. _{Se ultrapassou alguém: Você emerge do subsolo {n_posicoes_ganhas} posição(ões) acima — {rivais_ultrapassados} ainda estão na reta quando você já cruzou.}_ O túnel esquecido vai ser lendário depois de hoje."
                             }
                         }
                     }
