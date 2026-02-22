@@ -56,18 +56,45 @@ export default function App() {
     const [isMuted, setIsMuted] = useState(false)
     const audioRef = useRef(null)
 
+    const [isPlaying, setIsPlaying] = useState(false)
+
+    // Handle user interaction to start playing if not muted
+    useEffect(() => {
+        if (!audioRef.current) return;
+        audioRef.current.volume = 0.3;
+
+        const handleInteraction = () => {
+            if (audioRef.current && !isPlaying && !isMuted) {
+                audioRef.current.play()
+                    .then(() => setIsPlaying(true))
+                    .catch(e => console.log("Audio play failed:", e));
+            }
+        };
+
+        // Listen for clicks on the document
+        document.addEventListener('click', handleInteraction);
+
+        return () => {
+            document.removeEventListener('click', handleInteraction);
+        };
+    }, [isPlaying, isMuted])
+
+    // Ensure audio element state matches React state when it updates
     useEffect(() => {
         if (audioRef.current) {
-            audioRef.current.volume = 0.3;
-            // Attempt autoplay
-            audioRef.current.play().catch(e => console.log("Autoplay prevented:", e));
+            audioRef.current.muted = isMuted;
         }
-    }, [])
+    }, [isMuted])
 
     const toggleMute = () => {
-        if (audioRef.current) {
-            audioRef.current.muted = !isMuted;
-            setIsMuted(!isMuted);
+        const nextMuted = !isMuted;
+        setIsMuted(nextMuted);
+
+        // If unmuting and hasn't started playing, try to play now
+        if (!nextMuted && !isPlaying && audioRef.current) {
+            audioRef.current.play()
+                .then(() => setIsPlaying(true))
+                .catch(e => console.log("Play on unmute failed:", e));
         }
     }
 
@@ -127,7 +154,7 @@ export default function App() {
             <RaceLog />
 
             {/* Background Audio */}
-            <audio ref={audioRef} src="./neon_race.mp3" loop />
+            <audio ref={audioRef} src={`${import.meta.env.BASE_URL}neon_race.mp3`} loop />
 
             {/* Global scanlines overlay */}
             <div
